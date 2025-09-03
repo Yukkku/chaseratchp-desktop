@@ -1,40 +1,81 @@
 import net from 'node:net';
+import { ipcMain } from 'electron';
 
-/** @type {0 | 1 | 2} */
-let status = 0;
+// 重複しないようにsessionidを生成する
+const createSessionId = (()=>{
+    let counter = 0n;
+    return () => (++counter).toString(36);
+})();
 
-const socket = net.connect(2009, '127.0.0.1', () => {
-    socket.write('test bot');
+/** @type {Map<string, [0|1|2|3|4, net.Socket]>} */
+const sessions = new Map();
+
+ipcMain.handle('chaser:connect', (e, host, port, name) => new Promise(resolve => {
+    const webcontent = e.sender;
+    let onMissConnection = () => resolve(null);
+    const socket = net.connect(port, host, () => {
+        socket.off('close', onMissConnection);
+        const sessionid = createSessionId();
+        resolve(sessionid);
+        socket.write(name);
+        /** @type {[0|1|2|3|4, net.Socket]} */
+        const info = [0, socket];
+        sessions.set(sessionid, info);
+        const close = () => {
+            socket.end();
+            info[0] = 4;
+            webcontent.send('chaser:close', sessionid);
+            sessions.delete(sessionid);
+        };
+        socket.on('close', () => {
+            if (info[0] === 4) return;
+            info[0] = 4;
+            webcontent.send('chaser:close', sessionid);
+            sessions.delete(sessionid);
+        });
+        socket.on('data', (e) => {
+            if (info[0] === 4) return;
+            const msg = e.toString().trim();
+            if (info[0] === 0) {
+                if (msg !== '@') return close();
+                socket.write('gr\r\n');
+                info[0] = 1;
+            } else if (info[0] === 1) {
+                if (!/^1[0123]{9}$/.test(msg)) return close();
+                webcontent.send('chaser:myturn', sessionid, msg);
+                info[0] = 2;
+            } else if (info[0] === 2) {
+                close();
+            } else if (info[0] === 3) {
+                if (!/^1[0123]{9}$/.test(msg)) return close();
+                socket.write('#\r\n');
+                info[0] = 0;
+            }
+        });
+    });
+    socket.on('error', () => {});
+    socket.on('close', onMissConnection);
+}));
+
+ipcMain.on('chaser:send', (e, sessionid, command) => {
+    const info = sessions.get(sessionid);
+    if (!info) return;
+    if (info[0] === 4) return;
+    if (info[0] !== 2) {
+        info[1].end();
+        info[0] = 4;
+        e.sender.send('chaser:close', sessionid);
+        sessions.delete(sessionid);
+    }
+    info[1].write(`${command}\r\n`);
+    info[0] = 3;
 });
 
-socket.on('error', () => {});
-
-socket.on('data', e => {
-    const msg = e.toString().trim();
-    switch (status) {
-        case 0:
-            if (msg !== '@') {
-                socket.end();
-                return;
-            }
-            socket.write('gr\r\n');
-            status = 1;
-            break;
-        case 1:
-            if (!/^[01][0123]{9}$/.test(msg) || msg[0] === '0') {
-                socket.end();
-                return;
-            }
-            socket.write('wr\r\n');
-            status = 2;
-            break;
-        case 2:
-            if (!/^[01][0123]{9}$/.test(msg) || msg[0] === '0') {
-                socket.end();
-                return;
-            }
-            socket.write('#\r\n');
-            status = 0;
-            break;
-    }
+ipcMain.on('chaser:close', (_e, sessionid) => {
+    const info = sessions.get(sessionid);
+    if (!info) return;
+    if (info[0] === 4) return;
+    info[0] = 4;
+    info[1].end();
+    sessions.delete(sessionid);
 });

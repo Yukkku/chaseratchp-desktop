@@ -21,7 +21,12 @@ contextBridge.exposeInMainWorld('EditorPreload', {
   setExportForPackager: (callback) => {
     exportForPackager = callback;
   },
-  setIsFullScreen: (isFullScreen) => ipcRenderer.invoke('set-is-full-screen', isFullScreen)
+  setIsFullScreen: (isFullScreen) => ipcRenderer.invoke('set-is-full-screen', isFullScreen),
+  chaser: {
+    connect: (host, port, name) => ipcRenderer.invoke('chaser:connect', host, port, name),
+    send: (sessionid, command) => ipcRenderer.send('chaser:send', sessionid, command),
+    close: (sessionid) => ipcRenderer.send('chaser:close', sessionid),
+  },
 });
 
 let exportForPackager = () => Promise.reject(new Error('exportForPackager missing'));
