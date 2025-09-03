@@ -17,6 +17,7 @@ require('./protocols');
 require('./context-menu');
 require('./menu-bar');
 require('./crash-messages');
+require('./chaser');
 
 app.enableSandbox();
 
