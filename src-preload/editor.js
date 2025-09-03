@@ -87,3 +87,7 @@ if (navigator.userAgent.includes('Linux')) {
     capture: true
   });
 }
+
+window.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.key === 'F12') ipcRenderer.send('debug:open-devtools');
+});

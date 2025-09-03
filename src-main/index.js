@@ -252,3 +252,7 @@ app.whenReady().then(() => {
       });
   });
 });
+
+ipcMain.on('debug:open-devtools', (e) => {
+    e.sender.openDevTools();
+});
