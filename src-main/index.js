@@ -1,4 +1,4 @@
-const {app} = require('electron');
+const { app, ipcMain } = require('electron');
 
 // requestSingleInstanceLock() crashes the app in signed MAS builds
 // https://github.com/electron/electron/issues/15958
