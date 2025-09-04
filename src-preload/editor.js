@@ -23,8 +23,21 @@ contextBridge.exposeInMainWorld('EditorPreload', {
   },
   setIsFullScreen: (isFullScreen) => ipcRenderer.invoke('set-is-full-screen', isFullScreen),
   chaser: {
+    /**
+     * @param {string} host
+     * @param {number} port
+     * @param {string} name
+     * @returns {Promise<string | null>}
+     */
     connect: (host, port, name) => ipcRenderer.invoke('chaser:connect', host, port, name),
+    /**
+     * @param {string} sessionid
+     * @param {string} command
+     */
     send: (sessionid, command) => ipcRenderer.send('chaser:send', sessionid, command),
+    /**
+     * @param {string} sessionid
+     */
     close: (sessionid) => ipcRenderer.send('chaser:close', sessionid),
   },
 });
