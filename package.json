@@ -1,12 +1,9 @@
 {
-  "name": "turbowarp-desktop",
-  "description": "Scratch mod with a compiler, dark mode, a bunch of addons, and more.",
+  "name": "chaseratchp-desktop",
+  "description": "U-16 CHaserのためのScratchのMod",
   "version": "1.14.5",
   "license": "GPL-3.0",
-  "author": {
-    "email": "contact@turbowarp.org",
-    "name": "Thomas Weber"
-  },
+  "author": "Ikemoto Yu (https://github.com/Yukkku)",
   "scripts": {
     "fetch": "node scripts/download-library-files.js && node scripts/download-packager.js && node scripts/prepare-extensions.js",
     "webpack:compile": "webpack",
@@ -42,6 +39,7 @@
     "react-redux": "5.0.7",
     "redux": "3.7.2",
     "scratch-gui": "git+https://github.com/Yukkku/chaseratchp-gui.git#develop",
+    "scratch-blocks": "github:TurboWarp/scratch-blocks#develop-builds",
     "style-loader": "^0.23.0",
     "url-loader": "^4.1.1",
     "webpack": "4.47.0",
@@ -52,19 +50,14 @@
       "terser-webpack-plugin": "^4.2.3"
     }
   },
-  "homepage": "https://desktop.turbowarp.org/",
+  "homepage": "https://github.com/Yukkku/chaseratchp-desktop",
   "repository": {
     "type": "git",
-    "url": "https://github.com/TurboWarp/desktop.git"
-  },
-  "bugs": {
-    "url": "https://github.com/TurboWarp/desktop/issues",
-    "email": "contact@turbowarp.org"
+    "url": "https://github.com/Yukkku/chaseratchp-desktop.git"
   },
   "main": "./src-main/entrypoint.js",
   "build": {
-    "appId": "org.turbowarp.desktop",
-    "productName": "TurboWarp",
+    "productName": "ChaseratchP",
     "files": [
       "node_modules/**/*",
       "src-main/**/*",

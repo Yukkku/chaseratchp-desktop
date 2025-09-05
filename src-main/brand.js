@@ -1,5 +1,5 @@
-const PLATFORM_NAME = 'TurboWarp';
-const APP_NAME = 'TurboWarp Desktop';
+const PLATFORM_NAME = 'ChaseratchP';
+const APP_NAME = 'ChaseratchP';
 const PACKAGER_NAME = 'TurboWarp Packager';
 
 module.exports = {
