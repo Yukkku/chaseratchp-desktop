@@ -1,5 +1,5 @@
 import net from 'node:net';
-import { ipcMain } from 'electron';
+import { ipcMain, webContents } from 'electron';
 
 // 重複しないようにsessionidを生成する
 const createSessionId = (()=>{
@@ -49,6 +49,7 @@ ipcMain.handle('chaser:connect', (e, host, port, name) => new Promise(resolve =>
             } else if (info[0] === 3) {
                 if (!/^1[0123]{9}$/.test(msg)) return close();
                 socket.write('#\r\n');
+                webcontent.send('chaser:turnend', sessionid, msg);
                 info[0] = 0;
             }
         });
