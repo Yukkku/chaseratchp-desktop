@@ -115,5 +115,24 @@ module.exports = [
                 ]
             })
         ]
-    }
+    },
+
+    {
+        ...base,
+        output: {
+            path: path.resolve(__dirname, 'dist-renderer-webpack/editor/chaser'),
+            filename: 'index.js'
+        },
+        entry: './src-renderer-webpack/editor/chaser/index.jsx',
+        plugins: [
+            new CopyWebpackPlugin({
+                patterns: [
+                    {
+                        context: 'src-renderer-webpack/editor/chaser/',
+                        from: '*.html'
+                    }
+                ]
+            })
+        ]
+    },
 ];

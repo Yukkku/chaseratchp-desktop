@@ -19,6 +19,7 @@ const privilegedFetch = require('../fetch');
 const RichPresence = require('../rich-presence.js');
 const FileAccessWindow = require('./file-access-window.js');
 const ExtensionDocumentationWindow = require('./extension-documentation.js');
+const ChaserServerWindow = require('./chaser-server.js');
 
 const TYPE_FILE = 'file';
 const TYPE_URL = 'url';
@@ -520,6 +521,10 @@ class EditorWindow extends ProjectRunningWindow {
 
     this.ipc.handle('open-about', () => {
       AboutWindow.show();
+    });
+
+    this.ipc.handle('open-chaser-server', () => {
+      ChaserServerWindow.show();
     });
 
     this.ipc.handle('get-advanced-customizations', async () => {
