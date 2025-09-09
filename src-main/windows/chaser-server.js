@@ -210,7 +210,7 @@ const createClient = port => {
         status = [9];
       }
     });
-  });
+  }).listen(port);
 
   /** @type {Set<() => unknown>} */
   const closeListeners = new Set();
@@ -280,16 +280,47 @@ const createClient = port => {
   };
 };
 
+const uid = (() => {
+  let counter = 0n;
+  return () => (++counter).toString(36);
+})();
+
 module.exports = class ChaserServerWindow extends AbstractWindow {
   #game;
+  /** @type {[ReturnType<typeof createClient>, string] | null} */
+  #cool;
+  /** @type {[ReturnType<typeof createClient>, string] | null} */
+  #hot;
 
   constructor () {
     super();
     this.#game = createGame();
+    this.#cool = null;
+    this.#hot = null;
     this.window.setTitle(`Battle Server - ${APP_NAME}`);
     this.loadURL(`tw-editor://./chaser/server.html`);
     this.ipc.handle('chaser:getfield', () => {
       return this.#game.field();
+    });
+    this.ipc.handle('chaser:lieten', (_, player, port) => {
+      const id = uid();
+      if (player === 'C') {
+        if (this.#cool) this.#cool[0].close();
+        this.#cool = [createClient(port), id];
+      } else {
+        if (this.#hot) this.#hot[0].close();
+        this.#hot = [createClient(port), id];
+      }
+      return id;
+    });
+    this.ipc.handle('chaser:unlieten', /** @param {string} id */ (_, player, id) => {
+      if (player === 'C') {
+        if (this.#cool?.[1] === id) this.#cool[0].close();
+        this.#cool = null;
+      } else {
+        if (this.#hot?.[1] === id) this.#hot[0].close();
+        this.#hot = null;
+      }
     });
   }
 
