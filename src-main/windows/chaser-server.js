@@ -2,6 +2,7 @@
 
 const AbstractWindow = require('./abstract');
 const { APP_NAME } = require('../brand');
+const net = require('node:net');
 
 const createGame = () => {
   /** @type {(0|2|3)[][]} */
@@ -69,6 +70,11 @@ const createGame = () => {
      */
     field: () => ({ map, cool, hot }),
     winner,
+    /**
+     * @param {'C' | 'H'} player
+     * @returns {[number, number]}
+     */
+    getPosition: player => player === 'C' ? cool : hot,
     getAround,
     /**
      * @param {string} command
@@ -116,6 +122,117 @@ const createGame = () => {
         }
         return r;
       }
+    },
+  };
+};
+
+/** @param {number} port */
+const createClient = port => {
+  /**
+   * @type {(
+   *   | [0, Set<[net.Socket, 0|1|2|3|4|9]>]
+   *   | [1, string, [net.Socket, 0|1|2|3|4|9]]
+   *   | [9]
+   * )}
+   */
+  let status = [0, new Set()];
+  /** @type {[ReturnType<typeof createGame>, 'C' | 'H']} */
+  let qgame;
+  const server = net.createServer(socket => {
+    if (status[0] !== 0) {
+      socket.end();
+      return;
+    }
+    /** @type {[net.Socket, 0|1|2|3|4|9]} */
+    const info = [socket, 0];
+    status[1].add(info);
+    socket.on('data', e => {
+      if (status[0] === 9) return;
+      if (info[1] === 9) return;
+      const msg = e.toString().trim();
+      if (status[0] === 0) {
+        for (const bi of status[1]) {
+          if (bi === info) continue;
+          bi[0].end();
+          bi[1] = 9;
+        }
+        server.close();
+        status = [1, msg, info];
+        info[1] = 1;
+      } else if (status[2] !== info) {
+        socket.end();
+        info[1] = 9;
+      } else if (info[1] === 1) {
+        socket.end();
+        info[1] = 9;
+        status = [9];
+      } else if (info[1] === 2) {
+        if (msg !== 'gr') {
+          socket.end();
+          info[1] = 9;
+          status = [9];
+          return;
+        }
+        socket.write(qgame[0].getAround(qgame[0].getPosition(qgame[1]), qgame[1]) + '\r\n');
+        info[1] = 3;
+      } else if (info[1] === 3) {
+        if (!/^[wpls][udlr]$/.test(msg)) {
+          socket.end();
+          info[1] = 9;
+          status = [9];
+          return;
+        }
+        socket.write(qgame[0].command(msg, qgame[1]) + '\r\n');
+        info[1] = 4;
+      } else if (info[1] === 4) {
+        if (msg !== '#') {
+          socket.end();
+          info[1] = 9;
+          status = [9];
+          return;
+        }
+        info[1] = 1;
+      }
+    });
+    socket.on('error', () => {});
+    socket.on('close', () => {
+      if (status[0] === 9) return;
+      if (info[1] === 9) return;
+      info[1] = 9;
+      if (status[0] === 0) {
+        status[1].delete(info);
+      } else if (status[0] === 1) {
+        status = [9];
+      }
+    });
+  });
+
+  const close = () => {
+    if (status[0] === 0) {
+      for (const bi of status[1]) {
+        bi[0].end();
+        bi[1] = 9;
+      }
+    } else if (status[0] === 1) {
+      status[2][0].end();
+      status[2][1] = 9;
+    }
+    status = [9];
+  };
+  return {
+    close,
+    /**
+     * @param {ReturnType<typeof createGame>} game
+     * @param {'C' | 'H'} player
+     */
+    turnStart: (game, player) => {
+      if (status[0] !== 1 || status[2][1] !== 1) {
+        close();
+        return;
+      }
+      qgame = [game, player];
+      status[2][0].write('@\r\n');
+      status[2][1] = 2;
     },
   };
 };
