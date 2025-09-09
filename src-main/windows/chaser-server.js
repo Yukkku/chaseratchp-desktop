@@ -159,6 +159,7 @@ const createClient = port => {
         server.close();
         status = [1, msg, info];
         info[1] = 1;
+        emitOpen();
       } else if (status[2] !== info) {
         socket.end();
         info[1] = 9;
@@ -166,11 +167,13 @@ const createClient = port => {
         socket.end();
         info[1] = 9;
         status = [9];
+        emitClose();
       } else if (info[1] === 2) {
         if (msg !== 'gr') {
           socket.end();
           info[1] = 9;
           status = [9];
+          emitClose();
           return;
         }
         socket.write(qgame[0].getAround(qgame[0].getPosition(qgame[1]), qgame[1]) + '\r\n');
@@ -180,6 +183,7 @@ const createClient = port => {
           socket.end();
           info[1] = 9;
           status = [9];
+          emitClose();
           return;
         }
         socket.write(qgame[0].command(msg, qgame[1]) + '\r\n');
@@ -189,6 +193,7 @@ const createClient = port => {
           socket.end();
           info[1] = 9;
           status = [9];
+          emitClose();
           return;
         }
         info[1] = 1;
@@ -207,6 +212,18 @@ const createClient = port => {
     });
   });
 
+  /** @type {Set<() => unknown>} */
+  const closeListeners = new Set();
+  const emitClose = () => {
+    for (const listener of closeListeners) listener();
+  };
+
+  /** @type {Set<() => unknown>} */
+  const openListeners = new Set();
+  const emitOpen = () => {
+    for (const listener of openListeners) listener();
+  };
+
   const close = () => {
     if (status[0] === 0) {
       for (const bi of status[1]) {
@@ -219,6 +236,7 @@ const createClient = port => {
     }
     status = [9];
   };
+
   return {
     close,
     /**
@@ -233,6 +251,31 @@ const createClient = port => {
       qgame = [game, player];
       status[2][0].write('@\r\n');
       status[2][1] = 2;
+    },
+
+    get isConnecting() {
+      return status[0] === 1;
+    },
+    get isClosed() {
+      return status[0] === 9;
+    },
+
+    /** @param {() => unknown} listener */
+    onOpen: listener => {
+      openListeners.add(listener);
+    },
+    /** @param {() => unknown} listener */
+    offOpen: listener => {
+      openListeners.delete(listener);
+    },
+
+    /** @param {() => unknown} listener */
+    onClose: listener => {
+      closeListeners.add(listener);
+    },
+    /** @param {() => unknown} listener */
+    offClose: listener => {
+      closeListeners.delete(listener);
     },
   };
 };
