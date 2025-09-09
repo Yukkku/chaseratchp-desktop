@@ -23,7 +23,7 @@ const Player = ({ wi }) => {
     </div>;
 };
 
-const Test = () => {
+const Main = () => {
     const [field, setField] = useState(/** @type {(0|2|3)[][]} */ ([[0, 0, 0], [2, 3, 2], [2, 0, 0]]));
     const [coolPosition, setCoolPosition] = useState(/** @type {[Number, number]} */ ([0, 0]));
     const [hotPosition, setHotPosition] = useState(/** @type {[Number, number]} */ ([2, 2]));
@@ -62,4 +62,4 @@ const Test = () => {
     </div>;
 };
 
-ReactDOM.render((<Test />), document.getElementById('app'));
+ReactDOM.render((<Main />), document.getElementById('app'));
