@@ -70,6 +70,53 @@ const createGame = () => {
     field: () => ({ map, cool, hot }),
     winner,
     getAround,
+    /**
+     * @param {string} command
+     * @param {'C' | 'H'} player
+     */
+    command: (command, player) => {
+      const p = player === 'C' ? cool : hot;
+      /** @type {[number, number]} */
+      let dir;
+      if (command[1] === 'u') {
+        dir = [-1, 0];
+      } else if (command[1] === 'd') {
+        dir = [1, 0];
+      } else if (command[1] === 'l') {
+        dir = [-1, 0];
+      } else if (command[1] === 'r') {
+        dir = [1, 0];
+      } else throw new Error();
+      lastMove = player;
+      if (command[0] === 'w') {
+        p[0] += dir[0];
+        p[1] += dir[1];
+        return getAround(p, player);
+      } else if (command[0] === 'p') {
+        const [x, y] = [p[0] + dir[0], p[1] + dir[1]];
+        if (0 <= x && x < map.length && 0 <= y && y < map[0].length) {
+          map[x][y] = 2;
+        }
+        return getAround(p, player);
+      } else if (command[0] === 'l') {
+        return getAround([p[0] + dir[0] * 2, p[0] + dir[0] * 2], player);
+      } else if (command[0] === 's') {
+        /** @type {[number, number]} */
+        const q = [...p];
+        const rival = player === 'C' ? hot : cool;
+        let r = winner() ? '0' : '1';
+        for (let i = 0; i < 9; ++i) {
+          q[0] += dir[0];
+          q[1] += dir[1];
+          if (q[0] === rival[0] && q[1] === rival[1]) {
+            r += '1';
+          } else {
+            r += String(getMapCell(...q));
+          }
+        }
+        return r;
+      }
+    },
   };
 };
 
