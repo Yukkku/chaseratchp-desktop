@@ -1,6 +1,6 @@
 :root {
     font-family: "Yu Gothic UI";
-    font-size: 24pt;
+    font-size: 12pt;
     background-color: #fff;
 }
 
@@ -45,10 +45,28 @@ body {
             overflow: hidden;
         }
         & > .name {
-            height: 1rlh;
+            height: 2rlh;
+            line-height: 2rlh;
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
+        }
+        & > .port {
+            height: 2rlh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            & > input {
+                width: 6ch;
+                font-family: "Yu Gothic UI";
+                font-size: 1rem;
+            }
+            & > button {
+                margin-left: 0.5rem;
+                font-family: "Yu Gothic UI";
+                font-size: 1rem;
+            }
         }
     }
 }

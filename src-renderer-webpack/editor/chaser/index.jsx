@@ -6,9 +6,20 @@ import styles from './server.css';
  * @param {{ wi: 'C' | 'H' }} param0
  */
 const Player = ({ wi }) => {
+    const [status, setStatus] = useState(/** @type {[0 | 1, number] | [2, string]} */ [0, wi === 'C' ? 2009 : 2010]);
     return <div class={wi === 'C' ? styles.cool : styles.hot}>
         <div class={styles.playtag}>{wi === 'C' ? 'COOL' : 'HOT'}</div>
-        <div class={styles.name}>テスト太郎</div>
+        {status[0] === 2
+            ? (<div class={styles.name}>{status[1]}</div>)
+            : (<div class={styles.port}>
+                <input onChange={(e) => {
+                    setStatus([0, Number(e.target.value)]);
+                }} value={status[1]} disabled={status[0] === 1}/>
+                <button onClick={() => {
+                    setStatus([1 - status[0], status[1]]);
+                }}>{status[0] === 0 ? "待機開始" : "待機終了"}</button>
+            </div>)
+        }
     </div>;
 };
 
