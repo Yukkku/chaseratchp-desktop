@@ -1,0 +1,54 @@
+:root {
+    font-family: "Yu Gothic UI";
+    font-size: 24pt;
+    background-color: #fff;
+}
+
+body {
+    margin: 0;
+}
+
+.grid {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    display: grid;
+    --player-height: calc(3rlh + 1rem);
+    grid-template:
+      "view view" calc(100vh - var(--player-height))
+      "cool hot " var(--player-height) /
+       1fr  1fr;
+    & > .view {
+        grid-area: view;
+        box-sizing: border-box;
+        padding: 8px;
+        width: 100vw;
+        height: calc(100vh - var(--player-height));
+        object-fit: contain;
+    }
+    & > .cool {
+        grid-area: cool;
+        background-color: #03c;
+    }
+    & > .hot {
+        grid-area: hot;
+        background-color: #c30;
+    }
+    & > .cool, & > .hot {
+        width: calc(50vw - 1rem);
+        text-align: center;
+        user-select: none;
+        color: #fff;
+        padding: 0.5rem;
+        & > .playtag {
+            height: 1rlh;
+            overflow: hidden;
+        }
+        & > .name {
+            height: 1rlh;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+    }
+}

@@ -1,5 +1,16 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
+import styles from './server.css';
+
+/**
+ * @param {{ wi: 'C' | 'H' }} param0
+ */
+const Player = ({ wi }) => {
+    return <div class={wi === 'C' ? styles.cool : styles.hot}>
+        <div class={styles.playtag}>{wi === 'C' ? 'COOL' : 'HOT'}</div>
+        <div class={styles.name}>テスト太郎</div>
+    </div>;
+};
 
 const Test = () => {
     const [field, setField] = useState(/** @type {(0|2|3)[][]} */ ([[0, 0, 0], [2, 3, 2], [2, 0, 0]]));
@@ -7,8 +18,8 @@ const Test = () => {
     const [hotPosition, setHotPosition] = useState(/** @type {[Number, number]} */ ([2, 2]));
     const width = field[0].length;
     const height = field.length;
-    return <div>
-        <svg viewBox={`0 0 ${width * 21 + 1} ${height * 21 + 1}`}>
+    return <div class={styles.grid}>
+        <svg class={styles.view} viewBox={`0 0 ${width * 21 + 1} ${height * 21 + 1}`}>
             {field.map((line, i) => line.map((c, j) => {
                 const offsetX = j * 21 + 1;
                 const offsetY = i * 21 + 1;
@@ -35,6 +46,8 @@ const Test = () => {
                 <rect x={i * 21} y={0} width={1} height="100%"/>
             ))}
         </svg>
+        <Player wi="C"/>
+        <Player wi="H"/>
     </div>;
 };
 
