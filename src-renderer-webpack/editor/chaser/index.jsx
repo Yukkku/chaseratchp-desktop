@@ -24,7 +24,10 @@ const Player = ({ wi }) => {
                     if (status[0] === 0) {
                         const [id, promise] = ServerPreloads.listen(wi, status[1]);
                         setStatus([1, status[1], id]);
-                        promise.then(() => setStatus([2, status[1], id]));
+                        promise.then(() => setStatus(nstatus => {
+                            if (status !== nstatus) return nstatus;
+                            return [2, status[1], id];
+                        }));
                     } else if (status[0] === 2) {
                         setStatus([0, status[1]]);
                         ServerPreloads.unlisten(wi, status[2]);
