@@ -77,6 +77,7 @@ const Main = () => {
     const height = field.length;
     return <div className={styles.grid}>
         <svg className={styles.view} viewBox={`0 0 ${width * 21 + 1} ${height * 21 + 1}`}>
+            <rect x={0.5} y={0.5} width={width * 21} height={height * 21} fill="#fff"/>
             {field.map((line, i) => line.map((c, j) => {
                 const offsetX = j * 21 + 1;
                 const offsetY = i * 21 + 1;
@@ -106,7 +107,7 @@ const Main = () => {
         <Player wi="C"/>
         <Player wi="H"/>
         <div className={styles.control}>
-            <button>ゲーム開始</button>
+            <button disabled>ゲーム開始</button>
         </div>
     </div>;
 };
