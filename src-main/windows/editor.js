@@ -524,7 +524,7 @@ class EditorWindow extends ProjectRunningWindow {
     });
 
     this.ipc.handle('open-chaser-server', () => {
-      ChaserServerWindow.show();
+      ChaserServerWindow.show(this.window);
     });
 
     this.ipc.handle('get-advanced-customizations', async () => {

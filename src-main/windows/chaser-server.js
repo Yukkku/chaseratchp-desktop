@@ -350,8 +350,9 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
   /** @type {[ReturnType<typeof createClient>, string] | null} */
   #hot;
 
-  constructor () {
-    super();
+  /** @param {Electron.BrowserWindow} [parent] */
+  constructor (parent) {
+    super({ electronParent: parent });
     this.#game = createGame();
     this.#cool = null;
     this.#hot = null;
@@ -452,7 +453,13 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
     return '#ffffff';
   }
 
-  static show () {
-    AbstractWindow.singleton(ChaserServerWindow).show();
+  /** @param {Electron.BrowserWindow} [parent] */
+  static show (parent) {
+    if (parent) {
+      const win = AbstractWindow.getWindowsByClass(ChaserServerWindow).find(win => win.parentWindow === parent);
+      (win ?? new ChaserServerWindow(parent)).show();
+    } else {
+      AbstractWindow.singleton(ChaserServerWindow).show();
+    }
   }
 }

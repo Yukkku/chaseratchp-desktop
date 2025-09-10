@@ -10,12 +10,14 @@ const windowsByClass = new Map();
  * @typedef AbstractWindowOptions
  * @property {Electron.BrowserWindow} [existingWindow]
  * @property {Electron.BrowserWindow} [parentWindow]
+ * @property {Electron.BrowserWindow} [electronParent]
  */
 
 class AbstractWindow {
   /** @param {AbstractWindowOptions} options */
   constructor (options = {}) {
     this.parentWindow = options.parentWindow || null;
+    this.electronParent = options.electronParent || null;
 
     /** @type {Electron.BrowserWindow} */
     this.window = options.existingWindow || new BrowserWindow(this.getWindowOptions());
@@ -193,6 +195,8 @@ class AbstractWindow {
       // This path won't work in development but it will work in production
       options.icon = path.resolve(__dirname, '../../../icon.png');
     }
+
+    if (this.electronParent) options.parent = this.electronParent;
 
     return options;
   }
