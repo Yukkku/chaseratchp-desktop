@@ -93,6 +93,7 @@ body {
         width: 100vw;
         display: flex;
         justify-content: center;
+        align-items: center;
         & button {
             background-color: hsl(38,100%,55%);
             border: none;
@@ -105,6 +106,12 @@ body {
             &:disabled {
                 cursor: auto;
                 opacity: 0.5;
+            }
+            &.hidden {
+                width: 0;
+                padding: 0.75rem 0;
+                overflow: hidden;
+                text-wrap: nowrap;
             }
         }
     }

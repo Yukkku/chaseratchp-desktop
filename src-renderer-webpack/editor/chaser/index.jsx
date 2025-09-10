@@ -166,17 +166,18 @@ const Main = () => {
         <Player wi="C" onConnect={() => setConnecting([true, connecting[1]])} onDisConnect={() => setConnecting([false, connecting[1]])}/>
         <Player wi="H" onConnect={() => setConnecting([connecting[0], true])} onDisConnect={() => setConnecting([connecting[0], false])}/>
         <div className={styles.control}>
+            <button className={progress !== null ? styles.hidden : void 0}  onClick={() => {
+                ServerPreloads.start();
+                setProgress(200);
+            }} disabled={!connecting.every(r => r)}>ゲーム開始</button>
             {progress === null ?
-                (<button onClick={() => {
-                    ServerPreloads.start();
-                    setProgress(200);
-                 }} disabled={!connecting.every(r => r)}>ゲーム開始</button>)
+                (undefined)
              : progress === 'C' ?
-                 ("Coolの勝ち!")
+                ("Coolの勝ち!")
              : progress === 'H' ?
-                 ("Hotの勝ち!")
+                ("Hotの勝ち!")
              :
-                 (`残り${Math.ceil(progress / 2)}ターン`)
+                (`残り${Math.ceil(progress / 2)}ターン`)
             }
         </div>
     </div>;
