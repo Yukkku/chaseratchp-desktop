@@ -75,16 +75,26 @@ const Player = ({ wi }) => {
     </div>;
 };
 
+/**
+ * @typedef {{
+ *      map: readonly (readonly (0 | 2 | 3)[])[];
+ *      cool: [number, number];
+ *      hot: [number, number];
+ *  }} Field
+ */
+
 const Main = () => {
-    const [field, setField] = useState(/** @type {(0|2|3)[][]} */ ([[0, 0, 0], [2, 3, 2], [2, 0, 0]]));
-    const [coolPosition, setCoolPosition] = useState(/** @type {[Number, number]} */ ([0, 0]));
-    const [hotPosition, setHotPosition] = useState(/** @type {[Number, number]} */ ([2, 2]));
-    const width = field[0].length;
-    const height = field.length;
+    const [field, setField] = useState(/** @type {Field} */ ({
+        map: [[0, 0, 0], [2, 3, 2], [0, 0, 0]],
+        cool: [0, 0],
+        hot: [2, 2],
+    }));
+    const width = field.map[0].length;
+    const height = field.map.length;
     return <div className={styles.grid}>
         <svg className={styles.view} viewBox={`0 0 ${width * 21 + 1} ${height * 21 + 1}`}>
             <rect x={0.5} y={0.5} width={width * 21} height={height * 21} fill="#fff"/>
-            {field.map((line, i) => line.map((c, j) => {
+            {field.map.map((line, i) => line.map((c, j) => {
                 const offsetX = j * 21 + 1;
                 const offsetY = i * 21 + 1;
                 if (c === 0) return;
@@ -97,10 +107,10 @@ const Main = () => {
                     <path fill="#0c0" d="M10,2L5.29772,16.47214L17.60845,7.52786L2.39155,7.52786L14.70228,16.47214Z"/>
                 </g>);
             }))}
-            <g transform={`translate(${coolPosition[0] * 21 + 1} ${coolPosition[1] * 21 + 1})`}>
+            <g transform={`translate(${field.cool[0] * 21 + 1} ${field.cool[1] * 21 + 1})`}>
                 <path fill="#03f" d="M20.5,-0.5L10,0A10,10 0 0,0 10,20L20.5,20.5V16H10A6,6 0 0,1 10,4H20.5Z"/>
             </g>
-            <g transform={`translate(${hotPosition[0] * 21 + 1} ${hotPosition[1] * 21 + 1})`}>
+            <g transform={`translate(${field.hot[0] * 21 + 1} ${field.hot[1] * 21 + 1})`}>
                 <path fill="#f30" d="M-0.5,-0.5V20.5H4V12H16V20.5H20.5V-0.5H16V8H4V-0.5Z"/>
             </g>
             {Array.from({length: height + 1}, (_, i) => (
