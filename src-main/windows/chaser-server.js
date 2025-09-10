@@ -163,6 +163,8 @@ const createClient = port => {
   let status = [0, new Set()];
   /** @type {[ReturnType<typeof createGame>, 'C' | 'H']} */
   let qgame;
+  /** @type {NodeJS.Timeout | null} */
+  let intervalid;
   const server = net.createServer(socket => {
     if (status[0] !== 0) {
       socket.end();
@@ -185,6 +187,10 @@ const createClient = port => {
         status = [1, msg, info];
         info[1] = 1;
         emitOpen(msg);
+        intervalid = setInterval(() => socket.write(""), 1000);
+        closeListeners.add(() => {
+          if (intervalid) clearInterval(intervalid);
+        });
       } else if (status[2] !== info) {
         socket.end();
         info[1] = 9;
@@ -271,6 +277,7 @@ const createClient = port => {
   };
 
   const close = () => {
+    if (intervalid) clearInterval(intervalid);
     if (status[0] === 0) {
       for (const bi of status[1]) {
         bi[0].end();
