@@ -40,7 +40,7 @@ const createGame = () => {
     const dirs = [[-1, 0], [1, 0], [0, 1], [0, -1]];
     coolL ||= dirs.every(([x, y]) => getMapCell(cool[0] + x, cool[1] + y) === 2);
     hotL ||= dirs.every(([x, y]) => getMapCell(hot[0] + x, hot[1] + y) === 2);
-    if (lastMove = 'C') {
+    if (lastMove === 'C') {
       if (hotL) return 'C';
       if (coolL) return 'H';
     } else {
