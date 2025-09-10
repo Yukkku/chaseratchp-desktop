@@ -222,6 +222,7 @@ const createClient = port => {
           return;
         }
         info[1] = 1;
+        emitTurnend();
       }
     });
     socket.on('error', () => {});
@@ -262,6 +263,11 @@ const createClient = port => {
   /** @param {string} name */
   const emitOpen = (name) => {
     for (const listener of openListeners) listener(name);
+  };
+  /** @type {Set<() => unknown>} */
+  const turnendListeners = new Set();
+  const emitTurnend = () => {
+    for (const listener of turnendListeners) listener();
   };
 
   const close = () => {
@@ -317,6 +323,15 @@ const createClient = port => {
     /** @param {() => unknown} listener */
     offClose: listener => {
       closeListeners.delete(listener);
+    },
+
+    /** @param {() => unknown} listener */
+    onTurnend: listener => {
+      turnendListeners.add(listener);
+    },
+    /** @param {() => unknown} listener */
+    offTurnend: listener => {
+      turnendListeners.delete(listener);
     },
   };
 };
@@ -380,7 +395,28 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
       const cool = this.#cool?.[0];
       const hot = this.#hot?.[0];
       if (!cool || !hot) return;
-      cool.turnStart(this.#game, 'C');
+      for (;;) {
+        await /** @type {Promise<void>} */ (new Promise(resolve => {
+          cool.turnStart(this.#game, 'C');
+          const fin = () => {
+            cool.offTurnend(fin);
+            cool.offClose(fin);
+            resolve();
+          };
+          cool.onTurnend(fin);
+          cool.onClose(fin);
+        }));
+        await /** @type {Promise<void>} */ (new Promise(resolve => {
+          hot.turnStart(this.#game, 'H');
+          const fin = () => {
+            hot.offTurnend(fin);
+            hot.offClose(fin);
+            resolve();
+          };
+          hot.onTurnend(fin);
+          hot.onClose(fin);
+        }));
+      }
     });
     this.#game.onUpdate(field => {
       this.window.webContents.send('chaser:update', field);
