@@ -159,7 +159,7 @@ const createClient = port => {
         server.close();
         status = [1, msg, info];
         info[1] = 1;
-        emitOpen();
+        emitOpen(msg);
       } else if (status[2] !== info) {
         socket.end();
         info[1] = 9;
@@ -222,10 +222,11 @@ const createClient = port => {
     for (const listener of closeListeners) listener();
   };
 
-  /** @type {Set<() => unknown>} */
+  /** @type {Set<(name: string) => unknown>} */
   const openListeners = new Set();
-  const emitOpen = () => {
-    for (const listener of openListeners) listener();
+  /** @param {string} name */
+  const emitOpen = (name) => {
+    for (const listener of openListeners) listener(name);
   };
 
   const close = () => {
@@ -265,11 +266,11 @@ const createClient = port => {
       return status[0] === 9;
     },
 
-    /** @param {() => unknown} listener */
+    /** @param {(name: string) => unknown} listener */
     onOpen: listener => {
       openListeners.add(listener);
     },
-    /** @param {() => unknown} listener */
+    /** @param {(name: string) => unknown} listener */
     offOpen: listener => {
       openListeners.delete(listener);
     },
@@ -323,8 +324,8 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
           if (this.#hot?.[0] === client) this.#hot = null;
         });
       }
-      client.onOpen(() => {
-        this.window.webContents.send('chaser:connected', id);
+      client.onOpen(name => {
+        this.window.webContents.send('chaser:connected', id, name);
       });
       client.onClose(() => {
         this.window.webContents.send('chaser:closed', id);
