@@ -211,6 +211,10 @@ const createClient = port => {
       }
     });
   }).listen(port);
+  server.on('error', () => {});
+  server.on('close', () => {
+    if (status[0] === 0) emitClose();
+  });
 
   /** @type {Set<() => unknown>} */
   const closeListeners = new Set();
