@@ -41,13 +41,21 @@ body {
         width: 50vw;
         text-align: center;
         padding: 1rem 0.75rem 1.5rem;
-        & > .playtag {
-            margin-bottom: 1rem;
-            font-weight: bold;
-        }
+        display: flex;
+        align-items: center;
         & > .name {
+            width: 100%;
+            max-height: 100%;
+            overflow: hidden;
+            text-wrap: nowrap;
+            text-overflow: ellipsis;
+            & + .port {
+                width: 0;
+                overflow: hidden;
+            }
         }
         & > .port {
+            flex-grow: 1;
             overflow: hidden;
             display: flex;
             & > input {

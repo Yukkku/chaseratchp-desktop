@@ -73,29 +73,26 @@ const Player = ({ wi, onConnect, onDisConnect }) => {
         };
     }, [status, onConnect, onDisConnect]);
     return <div className={wi === 'C' ? styles.cool : styles.hot}>
-        <div className={styles.playtag}>{wi === 'C' ? 'COOL' : 'HOT'}</div>
-        {status[0] === 3
-            ? (<div className={styles.name}>{status[1]}</div>)
-            : (<div className={styles.port}>
-                <input onChange={(e) => {
-                    setStatus([0, e.target.value]);
-                }} value={status[1]} disabled={status[0] !== 0}/>
-                <button onClick={() => {
-                    if (status[0] === 0) {
-                        const [id, promise] = ServerPreloads.listen(wi, port);
-                        const ks = [1, status[1], id];
-                        setStatus(ks);
-                        promise.then(() => setStatus(nstatus => {
-                            if (nstatus !== ks) return nstatus;
-                            return [2, status[1], id];
-                        }));
-                    } else if (status[0] === 2) {
-                        setStatus([0, status[1]]);
-                        ServerPreloads.unlisten(wi, status[2]);
-                    }
-                }} disabled={status[0] === 1 || port == null}>{status[0] === 0 ? "待機開始" : "待機終了"}</button>
-            </div>)
-        }
+        {status[0] === 3 && (<div className={styles.name}>{status[1]}</div>)}
+        <div className={styles.port}>
+            <input onChange={(e) => {
+                setStatus([0, e.target.value]);
+            }} value={status[1]} disabled={status[0] !== 0}/>
+            <button onClick={() => {
+                if (status[0] === 0) {
+                    const [id, promise] = ServerPreloads.listen(wi, port);
+                    const ks = [1, status[1], id];
+                    setStatus(ks);
+                    promise.then(() => setStatus(nstatus => {
+                        if (nstatus !== ks) return nstatus;
+                        return [2, status[1], id];
+                    }));
+                } else if (status[0] === 2) {
+                    setStatus([0, status[1]]);
+                    ServerPreloads.unlisten(wi, status[2]);
+                }
+            }} disabled={status[0] === 1 || port == null}>{status[0] === 0 ? "待機開始" : "待機終了"}</button>
+        </div>
     </div>;
 };
 
