@@ -129,12 +129,16 @@ const Main = () => {
                     <path fill="#0c0" d="M10,2L5.29772,16.47214L17.60845,7.52786L2.39155,7.52786L14.70228,16.47214Z"/>
                 </g>);
             }))}
-            <g transform={`translate(${field.cool[1] * 21 + 1} ${field.cool[0] * 21 + 1})`}>
-                <path fill="#03f" d="M20.5,-0.5L10,0A10,10 0 0,0 10,20L20.5,20.5V16H10A6,6 0 0,1 10,4H20.5Z"/>
-            </g>
-            <g transform={`translate(${field.hot[1] * 21 + 1} ${field.hot[0] * 21 + 1})`}>
-                <path fill="#f30" d="M-0.5,-0.5V20.5H4V12H16V20.5H20.5V-0.5H16V8H4V-0.5Z"/>
-            </g>
+            {0 <= field.cool[0] && field.cool[0] < height && 0 <= field.cool[1] && field.cool[1] < width
+                && (<g transform={`translate(${field.cool[1] * 21 + 1} ${field.cool[0] * 21 + 1})`}>
+                    <path fill="#03f" d="M20.5,-0.5L10,0A10,10 0 0,0 10,20L20.5,20.5V16H10A6,6 0 0,1 10,4H20.5Z"/>
+                </g>)
+            }
+            {0 <= field.hot[0] && field.hot[0] < height && 0 <= field.hot[1] && field.hot[1] < width
+                && (<g transform={`translate(${field.hot[1] * 21 + 1} ${field.hot[0] * 21 + 1})`}>
+                    <path fill="#f30" d="M-0.5,-0.5V20.5H4V12H16V20.5H20.5V-0.5H16V8H4V-0.5Z"/>
+                </g>)
+            }
             {Array.from({length: height + 1}, (_, i) => (
                 <rect x={0} y={i * 21} width="100%" height={1}/>
             ))}
