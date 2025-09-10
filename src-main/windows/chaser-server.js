@@ -4,17 +4,25 @@ const AbstractWindow = require('./abstract');
 const { APP_NAME } = require('../brand');
 const net = require('node:net');
 
+/**
+ * @typedef {{
+ *   map: (0|2|3)[][],
+ *   cool: [number, number], 
+ *   hot: [number, number],
+ * }} Field
+ */
+
 const createGame = () => {
   /** @type {(0|2|3)[][]} */
-  const map = [
+  let map = [
     [0, 0, 0],
     [2, 3, 2],
     [0, 0, 0],
   ];
   /** @type {[number, number]} */
-  const cool = [0, 0];
+  let cool = [0, 0];
   /** @type {[number, number]} */
-  const hot = [2, 2];
+  let hot = [2, 2];
   /** @type {'C' | 'H'} */
   let lastMove = 'H';
   /**
@@ -60,15 +68,24 @@ const createGame = () => {
     }
     return r;
   };
+
+  /** @type {Set<(field: Field) => void>} */
+  const updateListeners = new Set();
+  const emitUpdate = () => {
+    const field = { map, cool, hot };
+    for (const listener of updateListeners) listener(field);
+  };
+
   return {
-    /**
-     * @returns {{
-     *   map: readonly (readonly (0|2|3)[])[],
-     *   cool: [number, number], 
-     *   hot: [number, number],
-     * }}
-     */
+    /** @returns {Field} */
     field: () => ({ map, cool, hot }),
+    /** @param {Field} field */
+    setField: field => {
+      map = field.map;
+      cool = field.cool;
+      hot = field.hot;
+      emitUpdate();
+    },
     winner,
     /**
      * @param {'C' | 'H'} player
@@ -97,14 +114,17 @@ const createGame = () => {
       if (command[0] === 'w') {
         p[0] += dir[0];
         p[1] += dir[1];
+        emitUpdate();
         return getAround(p, player);
       } else if (command[0] === 'p') {
         const [x, y] = [p[0] + dir[0], p[1] + dir[1]];
         if (0 <= x && x < map.length && 0 <= y && y < map[0].length) {
           map[x][y] = 2;
         }
+        emitUpdate();
         return getAround(p, player);
       } else if (command[0] === 'l') {
+        emitUpdate();
         return getAround([p[0] + dir[0] * 2, p[0] + dir[0] * 2], player);
       } else if (command[0] === 's') {
         /** @type {[number, number]} */
@@ -120,9 +140,14 @@ const createGame = () => {
             r += String(getMapCell(...q));
           }
         }
+        emitUpdate();
         return r;
       }
     },
+    /** @param {(field: Field) => void} listener */
+    onUpdate: listener => { updateListeners.add(listener); },
+    /** @param {(field: Field) => void} listener */
+    offUpdate: listener => { updateListeners.delete(listener); },
   };
 };
 
@@ -344,6 +369,12 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
         if (this.#hot && this.#hot?.[1] === id) this.#hot[0].close();
         this.#hot = null;
       }
+    });
+    this.ipc.handle('chaser:start', () => {
+      this.#game.command('wr', 'C');
+    });
+    this.#game.onUpdate(field => {
+      this.window.webContents.send('chaser:update', field);
     });
   }
 

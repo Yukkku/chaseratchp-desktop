@@ -145,7 +145,7 @@ const Main = () => {
         <Player wi="C" onConnect={() => setConnecting([true, connecting[1]])} onDisConnect={() => setConnecting([false, connecting[1]])}/>
         <Player wi="H" onConnect={() => setConnecting([connecting[0], true])} onDisConnect={() => setConnecting([connecting[0], false])}/>
         <div className={styles.control}>
-            <button disabled={!connecting.every(r => r)}>ゲーム開始</button>
+            <button onClick={() => ServerPreloads.start()} disabled={!connecting.every(r => r)}>ゲーム開始</button>
         </div>
     </div>;
 };
