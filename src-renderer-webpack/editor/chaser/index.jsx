@@ -2,10 +2,20 @@ import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import styles from './server.css';
 
+/**
+ * @typedef {{
+ *      map: readonly (readonly (0 | 2 | 3)[])[];
+ *      cool: [number, number];
+ *      hot: [number, number];
+ *  }} Field
+ */
+
 /** @type {Map<string, () => void>} */
 const closeListeners = new Map();
 /** @type {Map<string, (name: string) => void>} */
 const openListeners = new Map();
+/** @type {Set<(field: Field) => void>} */
+const updateListeners = new Set();
 
 ServerPreloads.onClose(id => {
     closeListeners.get(id)?.();
@@ -13,11 +23,18 @@ ServerPreloads.onClose(id => {
 ServerPreloads.onConnect((id, name) => {
     openListeners.get(id)?.(name);
 });
+ServerPreloads.onUpdate((field) => {
+    for (const listener of updateListeners) listener(field);
+});
 
 /**
- * @param {{ wi: 'C' | 'H' }} param0
+ * @param {{
+ *     wi: 'C' | 'H',
+ *     onConnect?: () => unknown,
+ *     onDisConnect?: () => unknown,
+ * }} param0
  */
-const Player = ({ wi }) => {
+const Player = ({ wi, onConnect, onDisConnect }) => {
     const [status, setStatus] = useState(/**
         @type {(
             | [0, string]
@@ -36,18 +53,20 @@ const Player = ({ wi }) => {
         closeListeners.set(id, () => {
             if (status[0] === 3) {
                 setStatus([0, wi === 'C' ? 2009 : 2010]);
+                onDisConnect?.();
             } else {
                 setStatus([0, status[1]]);
             }
         });
         openListeners.set(id, name => {
             setStatus([3, name, status[2]]);
+            onConnect?.();
         });
         return () => {
             closeListeners.delete(id);
             openListeners.delete(id);
         };
-    }, status);
+    }, [status, onConnect, onDisConnect]);
     return <div className={wi === 'C' ? styles.cool : styles.hot}>
         <div className={styles.playtag}>{wi === 'C' ? 'COOL' : 'HOT'}</div>
         {status[0] === 3
@@ -75,20 +94,23 @@ const Player = ({ wi }) => {
     </div>;
 };
 
-/**
- * @typedef {{
- *      map: readonly (readonly (0 | 2 | 3)[])[];
- *      cool: [number, number];
- *      hot: [number, number];
- *  }} Field
- */
-
 const Main = () => {
     const [field, setField] = useState(/** @type {Field} */ ({
         map: [[0, 0, 0], [2, 3, 2], [0, 0, 0]],
         cool: [0, 0],
         hot: [2, 2],
     }));
+    const [connecting, setConnecting] = useState(/** @type {[boolean, boolean]} */ ([false, false]));
+    useEffect(() => {
+        /** @param {Field} field */
+        const onupdate = field => {
+            setField(field);
+        };
+        updateListeners.add(onupdate);
+        return () => {
+            updateListeners.delete(onupdate);
+        };
+    });
     const width = field.map[0].length;
     const height = field.map.length;
     return <div className={styles.grid}>
@@ -120,10 +142,10 @@ const Main = () => {
                 <rect x={i * 21} y={0} width={1} height="100%"/>
             ))}
         </svg>
-        <Player wi="C"/>
-        <Player wi="H"/>
+        <Player wi="C" onConnect={() => setConnecting([true, connecting[1]])} onDisConnect={() => setConnecting([false, connecting[1]])}/>
+        <Player wi="H" onConnect={() => setConnecting([connecting[0], true])} onDisConnect={() => setConnecting([connecting[0], false])}/>
         <div className={styles.control}>
-            <button disabled>ゲーム開始</button>
+            <button disabled={!connecting.every(r => r)}>ゲーム開始</button>
         </div>
     </div>;
 };

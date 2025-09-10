@@ -28,6 +28,8 @@ contextBridge.exposeInMainWorld('ServerPreloads', {
   onConnect: listener => { connectListeners.add(listener); },
   /** @param {(id: string) => void} listener */
   onClose: listener => { closeListeners.add(listener); },
+  /** @param {(field: any) => void} listener */
+  onUpdate: listener => { updateListeners.add(listener); },
 });
 
 /** @type {Set<(id: string) => void>} */
@@ -36,10 +38,17 @@ const connectListeners = new Set();
 /** @type {Set<(id: string) => void>} */
 const closeListeners = new Set();
 
+/** @type {Set<(field: any) => void>} */
+const updateListeners = new Set();
+
 ipcRenderer.on('chaser:connected', (_, id, name) => {
   for (const listener of connectListeners) listener(id, name);
 });
 
 ipcRenderer.on('chaser:closed', (_, id) => {
   for (const listener of closeListeners) listener(id);
+});
+
+ipcRenderer.on('chaser:update', (_, field) => {
+  for (const listener of updateListeners) listener(field);
 });
