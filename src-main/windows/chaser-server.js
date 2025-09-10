@@ -230,6 +230,7 @@ const createClient = port => {
         bi[0].end();
         bi[1] = 9;
       }
+      server.close();
     } else if (status[0] === 1) {
       status[2][0].end();
       status[2][1] = 9;
@@ -313,12 +314,12 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
       }
       return id;
     });
-    this.ipc.handle('chaser:unlisten', /** @param {string} id */ (_, player, id) => {
+    this.ipc.handle('chaser:unlisten', (_, player, id) => {
       if (player === 'C') {
-        if (this.#cool?.[1] === id) this.#cool[0].close();
+        if (this.#cool && this.#cool?.[1] === id) this.#cool[0].close();
         this.#cool = null;
       } else {
-        if (this.#hot?.[1] === id) this.#hot[0].close();
+        if (this.#hot && this.#hot?.[1] === id) this.#hot[0].close();
         this.#hot = null;
       }
     });
