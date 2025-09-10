@@ -106,9 +106,9 @@ const createGame = () => {
       } else if (command[1] === 'd') {
         dir = [1, 0];
       } else if (command[1] === 'l') {
-        dir = [-1, 0];
+        dir = [0, -1];
       } else if (command[1] === 'r') {
-        dir = [1, 0];
+        dir = [0, 1];
       } else throw new Error();
       lastMove = player;
       if (command[0] === 'w') {
@@ -370,8 +370,11 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
         this.#hot = null;
       }
     });
-    this.ipc.handle('chaser:start', () => {
-      this.#game.command('wr', 'C');
+    this.ipc.handle('chaser:start', async () => {
+      const cool = this.#cool?.[0];
+      const hot = this.#hot?.[0];
+      if (!cool || !hot) return;
+      cool.turnStart(this.#game, 'C');
     });
     this.#game.onUpdate(field => {
       this.window.webContents.send('chaser:update', field);
