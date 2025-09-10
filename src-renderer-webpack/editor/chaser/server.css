@@ -18,6 +18,7 @@ body {
     display: grid;
     grid-template:
       " view    view  " 1fr
+      "cooltag hottag " auto
       " cool     hot  " auto
       "control control" auto /
          1fr     1fr;
@@ -30,6 +31,17 @@ body {
         height: 100%;
         object-fit: contain;
     }
+    & > .cooltag {
+        grid-area: cooltag;
+    }
+    & > .hottag {
+        grid-area: hottag;
+    }
+    & > .cooltag, & > .hottag {
+        text-align: center;
+        font-weight: bold;
+        padding-top: 1rem;
+    }
     & > .cool {
         grid-area: cool;
     }
@@ -40,7 +52,7 @@ body {
         box-sizing: border-box;
         width: 50vw;
         text-align: center;
-        padding: 1rem 0.75rem 1.5rem;
+        padding: 0.75rem 0.75rem 1.5rem;
         display: flex;
         align-items: center;
         & > .name {

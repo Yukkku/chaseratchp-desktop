@@ -163,6 +163,8 @@ const Main = () => {
                 <rect x={i * 21} y={0} width={1} height="100%"/>
             ))}
         </svg>
+        <div className={styles.cooltag}>COOL</div>
+        <div className={styles.hottag}>HOT</div>
         <Player wi="C" onConnect={() => setConnecting([true, connecting[1]])} onDisConnect={() => setConnecting([false, connecting[1]])}/>
         <Player wi="H" onConnect={() => setConnecting([connecting[0], true])} onDisConnect={() => setConnecting([connecting[0], false])}/>
         <div className={styles.control}>
