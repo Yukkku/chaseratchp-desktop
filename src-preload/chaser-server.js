@@ -15,4 +15,22 @@ contextBridge.exposeInMainWorld('ServerPreloads', {
    * @param {string} uid
    */
   unlisten: (player, uid) => ipcRenderer.invoke('chaser:unlisten', player, uid),
+  /** @param {(id: string) => void} listener */
+  onConnect: listener => connectListeners.add(listener),
+  /** @param {(id: string) => void} listener */
+  onClose: listener => closeListeners.add(listener),
+});
+
+/** @type {Set<(id: string) => void>} */
+const connectListeners = new Set();
+
+/** @type {Set<(id: string) => void>} */
+const closeListeners = new Set();
+
+ipcRenderer.on('chaser:connected', (_, id) => {
+  for (const listener of connectListeners) listener(id);
+});
+
+ipcRenderer.on('chaser:closed', (_, id) => {
+  for (const listener of closeListeners) listener(id);
 });

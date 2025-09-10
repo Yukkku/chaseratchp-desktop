@@ -309,21 +309,26 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
     });
     this.ipc.handle('chaser:listen', (_, player, port) => {
       const id = uid();
+      const client = createClient(port);
       if (player === 'C') {
         if (this.#cool) this.#cool[0].close();
-        const client = createClient(port);
         this.#cool = [client, id];
         client.onClose(() => {
           if (this.#cool?.[0] === client) this.#cool = null;
         });
       } else {
         if (this.#hot) this.#hot[0].close();
-        const client = createClient(port);
         this.#hot = [client, id];
         client.onClose(() => {
           if (this.#hot?.[0] === client) this.#hot = null;
         });
       }
+      client.onOpen(() => {
+        this.window.webContents.send('chaser:connected', id);
+      });
+      client.onClose(() => {
+        this.window.webContents.send('chaser:closed', id);
+      });
       return id;
     });
     this.ipc.handle('chaser:unlisten', (_, player, id) => {
