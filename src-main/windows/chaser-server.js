@@ -402,7 +402,8 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
       const cool = this.#cool?.[0];
       const hot = this.#hot?.[0];
       if (!cool || !hot) return;
-      for (;;) {
+      for (let i = 0; i < 100; ++i) {
+        this.window.webContents.send('chaser:progress', this.#game.winner() ?? 200 - i * 2);
         await /** @type {Promise<void>} */ (new Promise(resolve => {
           cool.turnStart(this.#game, 'C');
           const fin = () => {
@@ -413,6 +414,7 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
           cool.onTurnend(fin);
           cool.onClose(fin);
         }));
+        this.window.webContents.send('chaser:progress', this.#game.winner() ?? 199 - i * 2);
         await /** @type {Promise<void>} */ (new Promise(resolve => {
           hot.turnStart(this.#game, 'H');
           const fin = () => {
@@ -424,6 +426,7 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
           hot.onClose(fin);
         }));
       }
+      this.window.webContents.send('chaser:progress', this.#game.winner() ?? 0);
     });
     this.#game.onUpdate(field => {
       this.window.webContents.send('chaser:update', field);

@@ -16,6 +16,8 @@ const closeListeners = new Map();
 const openListeners = new Map();
 /** @type {Set<(field: Field) => void>} */
 const updateListeners = new Set();
+/** @type {Set<(progress: null | 'C' | 'H' | number) => void>} */
+const progressListeners = new Set();
 
 ServerPreloads.onClose(id => {
     closeListeners.get(id)?.();
@@ -23,8 +25,11 @@ ServerPreloads.onClose(id => {
 ServerPreloads.onConnect((id, name) => {
     openListeners.get(id)?.(name);
 });
-ServerPreloads.onUpdate((field) => {
+ServerPreloads.onUpdate(field => {
     for (const listener of updateListeners) listener(field);
+});
+ServerPreloads.onProgress(progress => {
+    for (const listener of progressListeners) listener(progress);
 });
 
 /**
@@ -110,6 +115,20 @@ const Main = () => {
         updateListeners.add(onupdate);
         return () => {
             updateListeners.delete(onupdate);
+        };
+    });
+    useEffect(() => {
+        /** @param {null | 'C' | 'H' | number} progress */
+        const onprogress = np => {
+            if (np === 'C' || np === 'H') {
+                setProgress(np);
+            }
+            if (progress === 'C' || progress === 'H') return;
+            if (typeof np === 'number') setProgress(np);
+        };
+        progressListeners.add(onprogress);
+        return () => {
+            progressListeners.delete(onprogress);
         };
     });
     const width = field.map[0].length;

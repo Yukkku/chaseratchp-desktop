@@ -31,6 +31,8 @@ contextBridge.exposeInMainWorld('ServerPreloads', {
   onClose: listener => { closeListeners.add(listener); },
   /** @param {(field: any) => void} listener */
   onUpdate: listener => { updateListeners.add(listener); },
+  /** @param {(progress: any) => void} listener */
+  onProgress: listener => { progressListeners.add(listener); },
 });
 
 /** @type {Set<(id: string) => void>} */
@@ -42,6 +44,9 @@ const closeListeners = new Set();
 /** @type {Set<(field: any) => void>} */
 const updateListeners = new Set();
 
+/** @type {Set<(progress: any) => void>} */
+const progressListeners = new Set();
+
 ipcRenderer.on('chaser:connected', (_, id, name) => {
   for (const listener of connectListeners) listener(id, name);
 });
@@ -52,4 +57,8 @@ ipcRenderer.on('chaser:closed', (_, id) => {
 
 ipcRenderer.on('chaser:update', (_, field) => {
   for (const listener of updateListeners) listener(field);
+});
+
+ipcRenderer.on('chaser:progress', (_, progress) => {
+  for (const listener of progressListeners) listener(progress);
 });
