@@ -370,6 +370,12 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
         this.#hot = null;
       }
     });
+    this.window.on('close', () => {
+      if (this.#cool) this.#cool[0].close();
+      this.#cool = null;
+      if (this.#hot) this.#hot[0].close();
+      this.#hot = null;
+    });
     this.ipc.handle('chaser:start', async () => {
       const cool = this.#cool?.[0];
       const hot = this.#hot?.[0];
