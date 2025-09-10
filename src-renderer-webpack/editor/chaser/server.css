@@ -14,16 +14,19 @@ body {
     overflow: hidden;
     display: grid;
     --player-height: calc(3rlh + 1rem);
+    --control-height: calc(2rlh + 1rem);
     grid-template:
-      "view view" calc(100vh - var(--player-height))
-      "cool hot " var(--player-height) /
-       1fr  1fr;
+      " view    view  " calc(100vh - var(--player-height) - var(--control-height))
+      " cool     hot  " var(--player-height)
+      "control control" var(--control-height) /
+         1fr     1fr;
+
     & > .view {
         grid-area: view;
         box-sizing: border-box;
         padding: 8px;
         width: 100vw;
-        height: calc(100vh - var(--player-height));
+        height: calc(100vh - var(--player-height) - var(--control-height));
         object-fit: contain;
     }
     & > .cool {
@@ -67,6 +70,18 @@ body {
                 font-family: "Yu Gothic UI";
                 font-size: 1rem;
             }
+        }
+    }
+
+    & > .control {
+        grid-area: control;
+        background-color: hsla(95, 100%, 35%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        & > button {
+            font-size: 1rem;
+            font-family: "Yu Gothic UI";
         }
     }
 }

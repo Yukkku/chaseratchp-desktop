@@ -42,11 +42,11 @@ const Player = ({ wi }) => {
             openListeners.delete(id);
         };
     }, status);
-    return <div class={wi === 'C' ? styles.cool : styles.hot}>
-        <div class={styles.playtag}>{wi === 'C' ? 'COOL' : 'HOT'}</div>
+    return <div className={wi === 'C' ? styles.cool : styles.hot}>
+        <div className={styles.playtag}>{wi === 'C' ? 'COOL' : 'HOT'}</div>
         {status[0] === 3
-            ? (<div class={styles.name}>{status[1]}</div>)
-            : (<div class={styles.port}>
+            ? (<div className={styles.name}>{status[1]}</div>)
+            : (<div className={styles.port}>
                 <input onChange={(e) => {
                     setStatus([0, Number(e.target.value)]);
                 }} value={status[1]} disabled={status[0] !== 0}/>
@@ -75,8 +75,8 @@ const Main = () => {
     const [hotPosition, setHotPosition] = useState(/** @type {[Number, number]} */ ([2, 2]));
     const width = field[0].length;
     const height = field.length;
-    return <div class={styles.grid}>
-        <svg class={styles.view} viewBox={`0 0 ${width * 21 + 1} ${height * 21 + 1}`}>
+    return <div className={styles.grid}>
+        <svg className={styles.view} viewBox={`0 0 ${width * 21 + 1} ${height * 21 + 1}`}>
             {field.map((line, i) => line.map((c, j) => {
                 const offsetX = j * 21 + 1;
                 const offsetY = i * 21 + 1;
@@ -105,6 +105,9 @@ const Main = () => {
         </svg>
         <Player wi="C"/>
         <Player wi="H"/>
+        <div className={styles.control}>
+            <button>ゲーム開始</button>
+        </div>
     </div>;
 };
 
