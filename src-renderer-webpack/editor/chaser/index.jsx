@@ -20,10 +20,16 @@ ServerPreloads.onConnect((id, name) => {
 const Player = ({ wi }) => {
     const [status, setStatus] = useState(/**
         @type {(
-            | [0, number]
-            | [1 | 2, number, string]
+            | [0, string]
+            | [1 | 2, string, string]
             | [3, string, string]
         )} */ ([0, wi === 'C' ? 2009 : 2010]));
+    const port = (() => {
+        if (status[0] === 3) return null;
+        const port = Number(status[1]);
+        if (Number.isInteger(port) && 0 <= port && port < 65536) return port;
+        return null;
+    })();
     useEffect(() => {
         if (status[0] === 0) return;
         const id = status[2];
@@ -48,11 +54,11 @@ const Player = ({ wi }) => {
             ? (<div className={styles.name}>{status[1]}</div>)
             : (<div className={styles.port}>
                 <input onChange={(e) => {
-                    setStatus([0, Number(e.target.value)]);
+                    setStatus([0, e.target.value]);
                 }} value={status[1]} disabled={status[0] !== 0}/>
                 <button onClick={() => {
                     if (status[0] === 0) {
-                        const [id, promise] = ServerPreloads.listen(wi, status[1]);
+                        const [id, promise] = ServerPreloads.listen(wi, port);
                         const ks = [1, status[1], id];
                         setStatus(ks);
                         promise.then(() => setStatus(nstatus => {
@@ -63,7 +69,7 @@ const Player = ({ wi }) => {
                         setStatus([0, status[1]]);
                         ServerPreloads.unlisten(wi, status[2]);
                     }
-                }} disabled={status[0] === 1}>{status[0] === 0 ? "待機開始" : "待機終了"}</button>
+                }} disabled={status[0] === 1 || port == null}>{status[0] === 0 ? "待機開始" : "待機終了"}</button>
             </div>)
         }
     </div>;
