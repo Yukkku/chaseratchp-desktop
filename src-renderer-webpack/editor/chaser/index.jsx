@@ -101,6 +101,7 @@ const Main = () => {
         hot: [2, 2],
     }));
     const [connecting, setConnecting] = useState(/** @type {[boolean, boolean]} */ ([false, false]));
+    const [progress, setProgress] = useState(/** @type {null | number | 'C' | 'H'} */ (null));
     useEffect(() => {
         /** @param {Field} field */
         const onupdate = field => {
@@ -149,7 +150,18 @@ const Main = () => {
         <Player wi="C" onConnect={() => setConnecting([true, connecting[1]])} onDisConnect={() => setConnecting([false, connecting[1]])}/>
         <Player wi="H" onConnect={() => setConnecting([connecting[0], true])} onDisConnect={() => setConnecting([connecting[0], false])}/>
         <div className={styles.control}>
-            <button onClick={() => ServerPreloads.start()} disabled={!connecting.every(r => r)}>ゲーム開始</button>
+            {progress === null ?
+                (<button onClick={() => {
+                    ServerPreloads.start();
+                    setProgress(200);
+                 }} disabled={!connecting.every(r => r)}>ゲーム開始</button>)
+             : progress === 'C' ?
+                 ("Coolの勝ち!")
+             : progress === 'H' ?
+                 ("Hotの勝ち!")
+             :
+                 (`残り${Math.ceil(progress / 2)}ターン`)
+            }
         </div>
     </div>;
 };
