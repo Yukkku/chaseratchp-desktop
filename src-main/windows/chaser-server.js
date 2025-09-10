@@ -286,11 +286,6 @@ const createClient = port => {
   };
 };
 
-const uid = (() => {
-  let counter = 0n;
-  return () => (++counter).toString(36);
-})();
-
 module.exports = class ChaserServerWindow extends AbstractWindow {
   #game;
   /** @type {[ReturnType<typeof createClient>, string] | null} */
@@ -308,8 +303,7 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
     this.ipc.handle('chaser:getfield', () => {
       return this.#game.field();
     });
-    this.ipc.handle('chaser:listen', (_, player, port) => {
-      const id = uid();
+    this.ipc.handle('chaser:listen', (_, player, port, id) => {
       const client = createClient(port);
       if (player === 'C') {
         if (this.#cool) this.#cool[0].close();
@@ -330,7 +324,7 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
       client.onClose(() => {
         this.window.webContents.send('chaser:closed', id);
       });
-      return id;
+      return;
     });
     this.ipc.handle('chaser:unlisten', (_, player, id) => {
       if (player === 'C') {

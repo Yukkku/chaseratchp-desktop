@@ -4,12 +4,21 @@ window.addEventListener('keydown', (e) => {
   if (e.ctrlKey && e.key === 'F12') ipcRenderer.send('debug:open-devtools');
 });
 
+const uid = (() => {
+  let counter = 0n;
+  return () => (++counter).toString(36);
+})();
+
 contextBridge.exposeInMainWorld('ServerPreloads', {
   /**
    * @param {'C' | 'H'} player
    * @param {number} port
+   * @returns {[string, Promise<void>]}
    */
-  listen: (player, port) => ipcRenderer.invoke('chaser:listen', player, port),
+  listen: (player, port) => {
+    const id = uid();
+    return [id, ipcRenderer.invoke('chaser:listen', player, port, id)];
+  },
   /**
    * @param {'C' | 'H'} player
    * @param {string} uid

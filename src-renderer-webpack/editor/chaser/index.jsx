@@ -8,8 +8,8 @@ import styles from './server.css';
 const Player = ({ wi }) => {
     const [status, setStatus] = useState(/**
         @type {(
-            | [0 | 1, number]
-            | [2, number, string]
+            | [0, number]
+            | [1 | 2, number, string]
             | [3, string, string]
         )} */ ([0, wi === 'C' ? 2009 : 2010]));
     return <div class={wi === 'C' ? styles.cool : styles.hot}>
@@ -22,9 +22,9 @@ const Player = ({ wi }) => {
                 }} value={status[1]} disabled={status[0] !== 0}/>
                 <button onClick={() => {
                     if (status[0] === 0) {
-                        setStatus([1, status[1]]);
-                        ServerPreloads.listen(wi, status[1])
-                            .then(uid => setStatus([2, status[1], uid]));
+                        const [id, promise] = ServerPreloads.listen(wi, status[1]);
+                        setStatus([1, status[1], id]);
+                        promise.then(() => setStatus([2, status[1], id]));
                     } else if (status[0] === 2) {
                         setStatus([0, status[1]]);
                         ServerPreloads.unlisten(wi, status[2]);
