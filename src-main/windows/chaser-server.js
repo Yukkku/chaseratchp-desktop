@@ -311,10 +311,18 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
       const id = uid();
       if (player === 'C') {
         if (this.#cool) this.#cool[0].close();
-        this.#cool = [createClient(port), id];
+        const client = createClient(port);
+        this.#cool = [client, id];
+        client.onClose(() => {
+          if (this.#cool?.[0] === client) this.#cool = null;
+        });
       } else {
         if (this.#hot) this.#hot[0].close();
-        this.#hot = [createClient(port), id];
+        const client = createClient(port);
+        this.#hot = [client, id];
+        client.onClose(() => {
+          if (this.#hot?.[0] === client) this.#hot = null;
+        });
       }
       return id;
     });
