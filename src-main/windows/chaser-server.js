@@ -209,11 +209,21 @@ const createClient = port => {
       } else if (status[0] === 1) {
         status = [9];
       }
+      emitClose();
     });
   }).listen(port);
-  server.on('error', () => {});
+  server.on('error', () => {
+    if (status[0] === 0) { 
+      server.close();
+      status = [9];
+      emitClose();
+    }
+  });
   server.on('close', () => {
-    if (status[0] === 0) emitClose();
+    if (status[0] === 0) {
+      status = [9];
+      emitClose();
+    }
   });
 
   /** @type {Set<() => unknown>} */

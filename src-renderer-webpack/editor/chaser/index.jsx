@@ -1,6 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import styles from './server.css';
+
+/** @type {Map<string, () => void>} */
+const closeListeners = new Map();
+/** @type {Map<string, (name: string) => void>} */
+const openListeners = new Map();
+
+ServerPreloads.onClose(id => {
+    closeListeners.get(id)?.();
+});
+ServerPreloads.onConnect((id, name) => {
+    openListeners.get(id)?.(name);
+});
 
 /**
  * @param {{ wi: 'C' | 'H' }} param0
@@ -12,6 +24,24 @@ const Player = ({ wi }) => {
             | [1 | 2, number, string]
             | [3, string, string]
         )} */ ([0, wi === 'C' ? 2009 : 2010]));
+    useEffect(() => {
+        if (status[0] === 0) return;
+        const id = status[2];
+        closeListeners.set(id, () => {
+            if (status[0] === 3) {
+                setStatus([0, wi === 'C' ? 2009 : 2010]);
+            } else {
+                setStatus([0, status[1]]);
+            }
+        });
+        openListeners.set(id, name => {
+            setStatus([3, name, status[2]]);
+        });
+        return () => {
+            closeListeners.delete(id);
+            openListeners.delete(id);
+        };
+    }, status);
     return <div class={wi === 'C' ? styles.cool : styles.hot}>
         <div class={styles.playtag}>{wi === 'C' ? 'COOL' : 'HOT'}</div>
         {status[0] === 3
@@ -23,9 +53,10 @@ const Player = ({ wi }) => {
                 <button onClick={() => {
                     if (status[0] === 0) {
                         const [id, promise] = ServerPreloads.listen(wi, status[1]);
-                        setStatus([1, status[1], id]);
+                        const ks = [1, status[1], id];
+                        setStatus(ks);
                         promise.then(() => setStatus(nstatus => {
-                            if (status !== nstatus) return nstatus;
+                            if (nstatus !== ks) return nstatus;
                             return [2, status[1], id];
                         }));
                     } else if (status[0] === 2) {
