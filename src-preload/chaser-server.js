@@ -25,7 +25,8 @@ contextBridge.exposeInMainWorld('ServerPreloads', {
    * @param {string} uid
    */
   unlisten: (player, uid) => ipcRenderer.send('chaser:unlisten', player, uid),
-  start: () => ipcRenderer.invoke('chaser:start'),
+  start: () => ipcRenderer.send('chaser:start'),
+  readfile: () => ipcRenderer.send('chaser:readfile'),
   /** @param {(id: string, name: string) => void} listener */
   onConnect: listener => { connectListeners.add(listener); },
   /** @param {(id: string) => void} listener */

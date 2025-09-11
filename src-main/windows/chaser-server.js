@@ -1,5 +1,7 @@
 // @ts-check
 
+const { dialog } = require('electron'); 
+const fs = require('fs'); 
 const AbstractWindow = require('./abstract');
 const { APP_NAME } = require('../brand');
 const net = require('node:net');
@@ -382,6 +384,60 @@ const createClient = port => {
   };
 };
 
+/**
+ * @param {string} str
+ * @returns {Field | void}
+ */
+const parseField = str => {
+  /** @type {(0|2|3)[][]} */
+  const map = [];
+  /** @type {number?} */
+  let turns = null;
+  /** @type {[number,number]?} */
+  let size = null;
+  /** @type {[number,number]?} */
+  let cool = null;
+  /** @type {[number,number]?} */
+  let hot = null;
+  for (const l of str.trim().split('\n').map(x => x.trim())) {
+    if (/^\s*D\s*:\s*([023]\s*,\s*)*[023]\s*$/.test(l)) {
+      // @ts-ignore
+      map.push(l.split(':')[1].split(',').map(x => Number(x)));
+    } else if (/^\s*T\s*:\s*\d+\s*$/.test(l)) {
+      if (turns !== null) return;
+      turns = Number(l.split(':')[1]);
+    } else if (/^\s*S\s*:\s*\d+\s*,\s*\d+\s*$/.test(l)) {
+      if (size !== null) return;
+      // @ts-ignore
+      size = l.split(':')[1].split(',').map(x => Number(x));
+    } else if (/^\s*C\s*:\s*\d+\s*,\s*\d+\s*$/.test(l)) {
+      if (cool !== null) return;
+      // @ts-ignore
+      cool = l.split(':')[1].split(',').map(x => Number(x));
+    } else if (/^\s*H\s*:\s*\d+\s*,\s*\d+\s*$/.test(l)) {
+      if (hot !== null) return;
+      // @ts-ignore
+      hot = l.split(':')[1].split(',').map(x => Number(x));
+    }
+  }
+  if (turns === null) return;
+  if (size === null) return;
+  if (cool === null) return;
+  if (hot === null) return;
+  if (map.length !== size[1]) return;
+  if (map.some(x => x.length !== size[0])) return;
+  if (cool[0] < 0 || size[0] <= cool[0]) return;
+  if (cool[1] < 0 || size[1] <= cool[1]) return;
+  if (hot[0] < 0 || size[0] <= hot[0]) return;
+  if (hot[1] < 0 || size[1] <= hot[1]) return;
+  return {
+    map,
+    cool: [cool[1], cool[0]],
+    hot: [hot[1], hot[0]],
+    score: { cool: 0, hot: 0 },
+  };
+};
+
 module.exports = class ChaserServerWindow extends AbstractWindow {
   #game;
   /** @type {[ReturnType<typeof createClient>, string] | null} */
@@ -438,7 +494,7 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
       if (this.#hot) this.#hot[0].close();
       this.#hot = null;
     });
-    this.ipc.handle('chaser:start', async () => {
+    this.ipc.on('chaser:start', async () => {
       const cool = this.#cool?.[0];
       const hot = this.#hot?.[0];
       let flg = false;
@@ -503,6 +559,17 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
     });
     this.#game.onUpdate(field => {
       this.window.webContents.send('chaser:update', field);
+    });
+
+    this.ipc.on('chaser:readfile', async () => {
+      const { canceled, filePaths } = await dialog.showOpenDialog({
+        filters: [{ name: 'Map Files', extensions: ['map'] }]
+      });
+      if (canceled || filePaths.length === 0) return;
+      fs.readFile(filePaths[0], { encoding: 'utf-8' }, (_, data) => {
+        const field = parseField(data);
+        if (field) this.#game.setField(field);
+      });
     });
   }
 
