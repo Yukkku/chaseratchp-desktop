@@ -149,7 +149,7 @@ const createGame = () => {
         }
         emitUpdate();
         return r;
-      }
+      } else throw new Error();
     },
     /** @param {(field: Field) => void} listener */
     onUpdate: listener => { updateListeners.add(listener); },
@@ -162,8 +162,8 @@ const createGame = () => {
 const createClient = port => {
   /**
    * @type {(
-   *   | [0, Set<[net.Socket, 0|1|2|3|4|9]>]
-   *   | [1, string, [net.Socket, 0|1|2|3|4|9]]
+   *   | [0, Set<[net.Socket, 0|1|2|3|4|5|9]>]
+   *   | [1, string, [net.Socket, 0|1|2|3|4|5|9]]
    *   | [9]
    * )}
    */
@@ -177,7 +177,7 @@ const createClient = port => {
       socket.end();
       return;
     }
-    /** @type {[net.Socket, 0|1|2|3|4|9]} */
+    /** @type {[net.Socket, 0|1|2|3|4|5|9]} */
     const info = [socket, 0];
     status[1].add(info);
     socket.on('data', e => {
@@ -214,8 +214,9 @@ const createClient = port => {
           emitClose();
           return;
         }
-        socket.write(qgame[0].getAround(qgame[0].getPosition(qgame[1]), qgame[1]) + '\r\n');
-        info[1] = 3;
+        const around = qgame[0].getAround(qgame[0].getPosition(qgame[1]), qgame[1]);
+        socket.write(around + '\r\n');
+        info[1] = around[0] === '0' ? 5 : 3;
       } else if (info[1] === 3) {
         if (!/^[wpls][udlr]$/.test(msg)) {
           socket.end();
@@ -224,8 +225,9 @@ const createClient = port => {
           emitClose();
           return;
         }
-        socket.write(qgame[0].command(msg, qgame[1]) + '\r\n');
-        info[1] = 4;
+        const ret = qgame[0].command(msg, qgame[1]);
+        socket.write(ret + '\r\n');
+        info[1] = ret[0] === '0' ? 5 : 4;
       } else if (info[1] === 4) {
         if (msg !== '#') {
           socket.end();
@@ -236,6 +238,11 @@ const createClient = port => {
         }
         info[1] = 1;
         emitTurnend();
+      } else if (info[1] === 5) {
+        socket.end();
+        info[1] = 9;
+        status = [9];
+        emitClose();
       }
     });
     socket.on('error', () => {});
@@ -312,6 +319,17 @@ const createClient = port => {
       qgame = [game, player];
       status[2][0].write('@\r\n');
       status[2][1] = 2;
+    },
+
+    /**
+     * @param {ReturnType<typeof createGame>} game
+     * @param {'C' | 'H'} player
+     */
+    finGame: (game, player) => {
+      if (status[0] !== 1 || status[2][1] !== 1) return;
+      const msg = '0' + game.getAround(game.getPosition(player), player).slice(1);
+      status[2][0].write(msg + '\r\n');
+      status[2][1] = 5;
     },
 
     get isConnecting() {
@@ -435,6 +453,8 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
         }));
       }
       this.window.webContents.send('chaser:progress', this.#game.winner() ?? 0);
+      cool.finGame(this.#game, 'C');
+      hot.finGame(this.#game, 'H');
     });
     this.#game.onUpdate(field => {
       this.window.webContents.send('chaser:update', field);
