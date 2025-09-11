@@ -12,6 +12,7 @@ const net = require('node:net');
  *   cool: [number, number], 
  *   hot: [number, number],
  *   score: { cool: number, hot: number },
+ *   turns: number,
  * }} Field
  */
 
@@ -30,6 +31,8 @@ const createGame = () => {
   let items = [0, 0];
   /** @type {'C' | 'H'} */
   let lastMove = 'H';
+  /** @type {number} */
+  let turns = 100;
   /** @type {null | 'C' | 'H'} */
   let forceWinnwer = null;
   /**
@@ -80,18 +83,19 @@ const createGame = () => {
   /** @type {Set<(field: Field) => void>} */
   const updateListeners = new Set();
   const emitUpdate = () => {
-    const field = { map, cool, hot, score: { cool: items[0], hot: items[1] } };
+    const field = { map, cool, hot, score: { cool: items[0], hot: items[1] }, turns };
     for (const listener of updateListeners) listener(field);
   };
 
   return {
     /** @returns {Field} */
-    field: () => ({ map, cool, hot, score: { cool: items[0], hot: items[1] } }),
+    field: () => ({ map, cool, hot, score: { cool: items[0], hot: items[1] }, turns }),
     /** @param {Field} field */
     setField: field => {
       map = field.map;
       cool = field.cool;
       hot = field.hot;
+      turns = field.turns;
       emitUpdate();
     },
     winner,
@@ -111,6 +115,7 @@ const createGame = () => {
      */
     getPosition: player => player === 'C' ? cool : hot,
     getAround,
+    get turns() { return turns },
     /**
      * @param {string} command
      * @param {'C' | 'H'} player
@@ -435,6 +440,7 @@ const parseField = str => {
     cool: [cool[1], cool[0]],
     hot: [hot[1], hot[0]],
     score: { cool: 0, hot: 0 },
+    turns,
   };
 };
 
@@ -499,8 +505,8 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
       const hot = this.#hot?.[0];
       let flg = false;
       if (!cool || !hot) return;
-      for (let i = 0; i < 100; ++i) {
-        this.window.webContents.send('chaser:progress', this.#game.winner() ?? 200 - i * 2);
+      for (let i = 0; i < this.#game.turns; ++i) {
+        this.window.webContents.send('chaser:progress', this.#game.winner() ?? (this.#game.turns - i) * 2);
         await /** @type {Promise<void>} */ (new Promise(resolve => {
           cool.turnStart(this.#game, 'C');
           const fin = () => {
@@ -526,7 +532,7 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
           hot.onClose(onHotClose);
         }));
         if (flg) return;
-        this.window.webContents.send('chaser:progress', this.#game.winner() ?? 199 - i * 2);
+        this.window.webContents.send('chaser:progress', this.#game.winner() ?? (this.#game.turns - i) * 2 - 1);
         await /** @type {Promise<void>} */ (new Promise(resolve => {
           hot.turnStart(this.#game, 'H');
           const fin = () => {

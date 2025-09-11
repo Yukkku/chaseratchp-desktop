@@ -43,7 +43,8 @@ import styles from './server.css';
  *      map: readonly (readonly (0 | 2 | 3)[])[];
  *      cool: [number, number];
  *      hot: [number, number];
- *      score: { cool: number, hot: number }
+ *      score: { cool: number, hot: number };
+ *      turns: number;
  *  }} Field
  */
 
@@ -226,7 +227,7 @@ const Main = () => {
             <button className={progress != null ? styles.hidden : void 0} onClick={() => ServerPreloads.readfile()}>マップを読み込む</button>
             <button className={`${styles.start} ${progress != null ? styles.hidden : ""}`}  onClick={() => {
                 ServerPreloads.start();
-                setProgress(200);
+                setProgress(field.turns * 2);
             }} disabled={!connecting.every(r => r)}>ゲーム開始</button>
             {progress === null ?
                 (undefined)
