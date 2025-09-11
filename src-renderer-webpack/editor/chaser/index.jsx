@@ -1,6 +1,42 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import styles from './server.css';
+{
+    let theme = '';
+    let accent = 'hsla(95, 100%, 35%, 1.00)';
+    let themeSetting = null;
+
+    try {
+        themeSetting = localStorage.getItem('tw:theme');
+    } catch (_) {}
+    if (themeSetting === 'light') {
+        theme = 'light';
+    } else if (themeSetting === 'dark') {
+        theme = 'dark';
+    } else if (themeSetting) {
+        try {
+            const parsed = JSON.parse(themeSetting);
+            if (parsed.accent === 'red') {
+                accent = '#ff4c4c';
+            } else if (parsed.accent === 'purple') {
+                accent = '#855cd6';
+            } else if (parsed.accent === 'blue') {
+                accent = '#4c97ff';
+            }
+            if (parsed.gui === 'dark' || parsed.gui === 'light') {
+                theme = parsed.gui;
+            }
+        } catch (_) {}
+    }
+
+    if (!theme) {
+        theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    const root = document.documentElement;
+    root.style.setProperty('--theme-color', accent);
+    if (theme === 'dark') root.classList.add(styles.dark);
+}
 
 /**
  * @typedef {{
