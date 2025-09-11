@@ -175,13 +175,13 @@ const Main = () => {
     const height = field.map.length;
     return <div className={styles.grid}>
         <svg className={styles.view} viewBox={`0 0 ${width * 21 + 1} ${height * 21 + 1}`}>
-            <rect x={0.5} y={0.5} width={width * 21} height={height * 21} fill="#fff"/>
+            <rect x={0.5} y={0.5} width={width * 21} height={height * 21} fill="var(--view-back)"/>
             {field.map.map((line, i) => line.map((c, j) => {
                 const offsetX = j * 21 + 1;
                 const offsetY = i * 21 + 1;
                 if (c === 0) return;
-                if (c === 2) return (<g transform={`translate(${offsetX} ${offsetY})`} stroke="#000">
-                    <rect x={-0.5} y={-0.5} width={21} height={21} fill="#aaa" stroke="none"/>
+                if (c === 2) return (<g transform={`translate(${offsetX} ${offsetY})`} stroke="var(--view-wallline)">
+                    <rect x={-0.5} y={-0.5} width={21} height={21} fill="var(--view-wall)" stroke="none"/>
                     <line x1={-0.5} y1={-0.5} x2={20.5} y2={20.5}/>
                     <line x1={20.5} y1={-0.5} x2={-0.5} y2={20.5}/>
                 </g>);
@@ -200,10 +200,10 @@ const Main = () => {
                 </g>)
             }
             {Array.from({length: height + 1}, (_, i) => (
-                <rect x={0} y={i * 21} width="100%" height={1}/>
+                <rect x={0} y={i * 21} width="100%" height={1} fill="var(--view-border)"/>
             ))}
             {Array.from({length: width + 1}, (_, i) => (
-                <rect x={i * 21} y={0} width={1} height="100%"/>
+                <rect x={i * 21} y={0} width={1} height="100%" fill="var(--view-border)"/>
             ))}
         </svg>
         <div className={styles.cooltag}>

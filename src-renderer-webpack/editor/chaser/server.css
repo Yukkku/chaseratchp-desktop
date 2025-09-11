@@ -4,9 +4,17 @@
     background-color: #e9f1fc;
     color: hsl(225,15%,40%);
     --theme-color: hsla(95, 100%, 35%);
+    --view-border: #000;
+    --view-back: #fff;
+    --view-wall: #aaa;
+    --view-wallline: #000;
     &.dark {
         background-color: #111;
         color: #eee;
+        --view-border: #808080;
+        --view-back: #1e1e1e;
+        --view-wall: #555;
+        --view-wallline: #ccc;
     }
 }
 
