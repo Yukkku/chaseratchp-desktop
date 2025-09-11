@@ -513,7 +513,7 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
             fin();
             flg = true;
             hot.finGame(this.#game, 'H');
-            this.window.webContents.send('chaser:progress', 'H');
+            this.window.webContents.send('chaser:progress', this.#game.winner() ?? 'H');
           };
           const onHotClose = () => {
             fin();
@@ -539,7 +539,7 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
             fin();
             flg = true;
             cool.finGame(this.#game, 'C');
-            this.window.webContents.send('chaser:progress', 'C');
+            this.window.webContents.send('chaser:progress', this.#game.winner() ?? 'C');
           };
           const onCoolClose = () => {
             fin();
