@@ -7,6 +7,7 @@ import styles from './server.css';
  *      map: readonly (readonly (0 | 2 | 3)[])[];
  *      cool: [number, number];
  *      hot: [number, number];
+ *      score: { cool: number, hot: number }
  *  }} Field
  */
 
@@ -40,7 +41,7 @@ ServerPreloads.onProgress(progress => {
  *     started: boolean,
  * }} param0
  */
-const Player = ({ wi, onConnect, onDisConnect, started }) => {
+const Player = ({ wi, onConnect, onDisConnect, started, score }) => {
     const [status, setStatus] = useState(/**
         @type {(
             | [0, string] // 未接続 [0, ポート番号]
@@ -106,6 +107,7 @@ const Main = () => {
         map: [[0, 0, 0], [2, 3, 2], [0, 0, 0]],
         cool: [0, 0],
         hot: [2, 2],
+        score: { cool: 0, hot: 0 },
     }));
     const [connecting, setConnecting] = useState(/** @type {[boolean, boolean]} */ ([false, false]));
     const [progress, setProgress] = useState(/** @type {null | number | 'C' | 'H'} */ (null));
@@ -173,12 +175,14 @@ const Main = () => {
                 <path fill="#03f" d="M8,0H4A4,4 0 0,0 4,8H8V6H4A2,2 0 0,1 4,2H8Z"/>
             </svg>
             COOL
+            {progress != null && (<><span className={styles.score}>{String(field.score.cool)}</span> P</>)}
         </div>
         <div className={styles.hottag}>
             <svg viewBox="0 0 8 8">
                 <path fill="#f30" d="M0,0V8H2V5H6V8H8V0H6V3H2V0Z"/>
             </svg>
             HOT
+            {progress != null && (<><span className={styles.score}>{String(field.score.hot)}</span> P</>)}
         </div>
         <Player wi="C" onConnect={() => setConnecting([true, connecting[1]])} onDisConnect={() => setConnecting([false, connecting[1]])} started={progress != null}/>
         <Player wi="H" onConnect={() => setConnecting([connecting[0], true])} onDisConnect={() => setConnecting([connecting[0], false])} started={progress != null}/>

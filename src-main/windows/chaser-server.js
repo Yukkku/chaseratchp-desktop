@@ -9,6 +9,7 @@ const net = require('node:net');
  *   map: (0|2|3)[][],
  *   cool: [number, number], 
  *   hot: [number, number],
+ *   score: { cool: number, hot: number },
  * }} Field
  */
 
@@ -77,13 +78,13 @@ const createGame = () => {
   /** @type {Set<(field: Field) => void>} */
   const updateListeners = new Set();
   const emitUpdate = () => {
-    const field = { map, cool, hot };
+    const field = { map, cool, hot, score: { cool: items[0], hot: items[1] } };
     for (const listener of updateListeners) listener(field);
   };
 
   return {
     /** @returns {Field} */
-    field: () => ({ map, cool, hot }),
+    field: () => ({ map, cool, hot, score: { cool: items[0], hot: items[1] } }),
     /** @param {Field} field */
     setField: field => {
       map = field.map;
