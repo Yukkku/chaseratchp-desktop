@@ -391,7 +391,7 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
 
   /** @param {Electron.BrowserWindow} [parent] */
   constructor (parent) {
-    super({ electronParent: parent });
+    super({ electronParent: parent, parentWindow: parent });
     this.#game = createGame();
     this.#cool = null;
     this.#hot = null;
