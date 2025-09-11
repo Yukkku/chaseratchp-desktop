@@ -368,7 +368,7 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
     this.ipc.handle('chaser:getfield', () => {
       return this.#game.field();
     });
-    this.ipc.handle('chaser:listen', (_, player, port, id) => {
+    this.ipc.on('chaser:listen', (_, player, port, id) => {
       const client = createClient(port);
       if (player === 'C') {
         if (this.#cool) this.#cool[0].close();
@@ -391,7 +391,7 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
       });
       return;
     });
-    this.ipc.handle('chaser:unlisten', (_, player, id) => {
+    this.ipc.on('chaser:unlisten', (_, player, id) => {
       if (player === 'C') {
         if (this.#cool && this.#cool?.[1] === id) this.#cool[0].close();
         this.#cool = null;

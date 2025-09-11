@@ -17,13 +17,14 @@ contextBridge.exposeInMainWorld('ServerPreloads', {
    */
   listen: (player, port) => {
     const id = uid();
-    return [id, ipcRenderer.invoke('chaser:listen', player, port, id)];
+    ipcRenderer.send('chaser:listen', player, port, id);
+    return id;
   },
   /**
    * @param {'C' | 'H'} player
    * @param {string} uid
    */
-  unlisten: (player, uid) => ipcRenderer.invoke('chaser:unlisten', player, uid),
+  unlisten: (player, uid) => ipcRenderer.send('chaser:unlisten', player, uid),
   start: () => ipcRenderer.invoke('chaser:start'),
   /** @param {(id: string, name: string) => void} listener */
   onConnect: listener => { connectListeners.add(listener); },

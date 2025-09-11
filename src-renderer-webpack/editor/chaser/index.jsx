@@ -43,54 +43,55 @@ ServerPreloads.onProgress(progress => {
 const Player = ({ wi, onConnect, onDisConnect, started }) => {
     const [status, setStatus] = useState(/**
         @type {(
-            | [0, string]
-            | [1 | 2, string, string]
-            | [3, string, string]
-            | [4, string]
+            | [0, string] // 未接続 [0, ポート番号]
+            | [1, string, string] // 接続待機中 [1, ポート番号, クライアントID]
+            | [2, string, string] // 接続済 [2, 名前, クライアントID]
+            | [3, string] // 試合中切断 [3, 名前]
         )} */ ([0, wi === 'C' ? "2009" : "2010"]));
     const port = (() => {
-        if (status[0] === 3) return null;
+        if (status[0] === 2 || status[0] === 3) return null;
         const port = Number(status[1]);
         if (Number.isInteger(port) && 0 <= port && port < 65536) return port;
         return null;
     })();
     useEffect(() => {
-        if (status[0] === 0 || status[0] === 4) return;
+        if (status[0] === 0 || status[0] === 3) return;
         const id = status[2];
         closeListeners.set(id, () => {
-            if (status[0] === 3) {
-                setStatus([0, wi === 'C' ? "2009" : "2010"]);
+            if (status[0] === 2) {
+                if (started) {
+                    setStatus([3, status[1]]);
+                } else {
+                    setStatus([0, wi === 'C' ? "2009" : "2010"]);
+                }
                 onDisConnect?.();
             } else {
                 setStatus([0, status[1]]);
             }
         });
         openListeners.set(id, name => {
-            setStatus([3, name, status[2]]);
+            setStatus([2, name, status[2]]);
             onConnect?.();
         });
         return () => {
             closeListeners.delete(id);
             openListeners.delete(id);
         };
-    }, [status, onConnect, onDisConnect]);
+    }, [status, onConnect, onDisConnect, started]);
     return <div className={wi === 'C' ? styles.cool : styles.hot}>
-        {status[0] === 3 && (<div className={styles.name}>{status[1]}</div>)}
+        {(status[0] === 2 || status[0] === 3)
+            && (<div className={styles.name}>{status[1]}</div>)}
         <div className={styles.port}>
             <input onChange={(e) => {
                 setStatus([0, e.target.value]);
-            }} value={status[1]} disabled={status[0] !== 0}/>
+            }} value={status[0] === 0 || status[0] === 1 ? status[1] : "0"} disabled={status[0] !== 0}/>
             <button onClick={() => {
                 if (status[0] === 0) {
-                    /** @type {[string, Promise<void>]} */
-                    const [id, promise] = ServerPreloads.listen(wi, port);
+                    /** @type {string} */
+                    const id = ServerPreloads.listen(wi, port);
                     /** @type {[1, string, string]} */
                     const ks = [1, status[1], id];
                     setStatus(ks);
-                    promise.then(() => setStatus(nstatus => {
-                        if (nstatus !== ks) return nstatus;
-                        return [2, status[1], id];
-                    }));
                 } else if (status[0] === 2) {
                     setStatus([0, status[1]]);
                     ServerPreloads.unlisten(wi, status[2]);
