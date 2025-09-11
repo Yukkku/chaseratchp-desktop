@@ -168,8 +168,18 @@ const Main = () => {
                 <rect x={i * 21} y={0} width={1} height="100%"/>
             ))}
         </svg>
-        <div className={styles.cooltag}>COOL</div>
-        <div className={styles.hottag}>HOT</div>
+        <div className={styles.cooltag}>
+            <svg viewBox="0 0 8 8">
+                <path fill="#03f" d="M8,0H4A4,4 0 0,0 4,8H8V6H4A2,2 0 0,1 4,2H8Z"/>
+            </svg>
+            COOL
+        </div>
+        <div className={styles.hottag}>
+            <svg viewBox="0 0 8 8">
+                <path fill="#f30" d="M0,0V8H2V5H6V8H8V0H6V3H2V0Z"/>
+            </svg>
+            HOT
+        </div>
         <Player wi="C" onConnect={() => setConnecting([true, connecting[1]])} onDisConnect={() => setConnecting([false, connecting[1]])} started={progress != null}/>
         <Player wi="H" onConnect={() => setConnecting([connecting[0], true])} onDisConnect={() => setConnecting([connecting[0], false])} started={progress != null}/>
         <div className={styles.control}>

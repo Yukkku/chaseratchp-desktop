@@ -443,7 +443,7 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
 
   getDimensions () {
     return {
-      width: 700,
+      width: 400,
       height: 650
     };
   }
