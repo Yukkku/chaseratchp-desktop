@@ -23,6 +23,8 @@ const createGame = () => {
   let cool = [0, 0];
   /** @type {[number, number]} */
   let hot = [2, 2];
+  /** @type {[number, number]} */
+  let items = [0, 0];
   /** @type {'C' | 'H'} */
   let lastMove = 'H';
   /**
@@ -114,6 +116,11 @@ const createGame = () => {
       if (command[0] === 'w') {
         p[0] += dir[0];
         p[1] += dir[1];
+        if (getMapCell(...p) === 3) {
+          map[p[0]][p[1]] = 0;
+          map[p[0] - dir[0]][p[1] - dir[1]] = 2;
+          items[player === 'C' ? 0 : 1] += 1;
+        }
         emitUpdate();
         return getAround(p, player);
       } else if (command[0] === 'p') {
