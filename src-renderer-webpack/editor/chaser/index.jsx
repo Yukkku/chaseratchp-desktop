@@ -223,7 +223,8 @@ const Main = () => {
         <Player wi="C" onConnect={() => setConnecting([true, connecting[1]])} onDisConnect={() => setConnecting([false, connecting[1]])} started={progress != null}/>
         <Player wi="H" onConnect={() => setConnecting([connecting[0], true])} onDisConnect={() => setConnecting([connecting[0], false])} started={progress != null}/>
         <div className={styles.control}>
-            <button className={progress !== null ? styles.hidden : void 0}  onClick={() => {
+            <button className={progress != null ? styles.hidden : void 0} onClick={() => ServerPreloads.readfile()}>マップを読み込む</button>
+            <button className={`${styles.start} ${progress != null ? styles.hidden : ""}`}  onClick={() => {
                 ServerPreloads.start();
                 setProgress(200);
             }} disabled={!connecting.every(r => r)}>ゲーム開始</button>
