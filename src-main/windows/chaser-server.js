@@ -93,6 +93,14 @@ const createGame = () => {
       emitUpdate();
     },
     winner,
+    /** @returns {'C' | 'H' | null} */
+    lastWinner: () => {
+      const w = winner();
+      if (w) return w;
+      if (items[0] > items[1]) return 'C';
+      if (items[0] < items[1]) return 'H';
+      return null;
+    },
     /** @param {'C' | 'H'} player */
     setWinner: (player) => { forceWinnwer = player; },
     /**
@@ -489,7 +497,7 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
         }));
         if (flg) return;
       }
-      this.window.webContents.send('chaser:progress', this.#game.winner() ?? 0);
+      this.window.webContents.send('chaser:progress', this.#game.lastWinner() ?? 0);
       cool.finGame(this.#game, 'C');
       hot.finGame(this.#game, 'H');
     });
