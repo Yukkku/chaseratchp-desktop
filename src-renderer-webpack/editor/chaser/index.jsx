@@ -37,15 +37,17 @@ ServerPreloads.onProgress(progress => {
  *     wi: 'C' | 'H',
  *     onConnect?: () => unknown,
  *     onDisConnect?: () => unknown,
+ *     started: boolean,
  * }} param0
  */
-const Player = ({ wi, onConnect, onDisConnect }) => {
+const Player = ({ wi, onConnect, onDisConnect, started }) => {
     const [status, setStatus] = useState(/**
         @type {(
             | [0, string]
             | [1 | 2, string, string]
             | [3, string, string]
-        )} */ ([0, wi === 'C' ? 2009 : 2010]));
+            | [4, string]
+        )} */ ([0, wi === 'C' ? "2009" : "2010"]));
     const port = (() => {
         if (status[0] === 3) return null;
         const port = Number(status[1]);
@@ -53,11 +55,11 @@ const Player = ({ wi, onConnect, onDisConnect }) => {
         return null;
     })();
     useEffect(() => {
-        if (status[0] === 0) return;
+        if (status[0] === 0 || status[0] === 4) return;
         const id = status[2];
         closeListeners.set(id, () => {
             if (status[0] === 3) {
-                setStatus([0, wi === 'C' ? 2009 : 2010]);
+                setStatus([0, wi === 'C' ? "2009" : "2010"]);
                 onDisConnect?.();
             } else {
                 setStatus([0, status[1]]);
@@ -80,7 +82,9 @@ const Player = ({ wi, onConnect, onDisConnect }) => {
             }} value={status[1]} disabled={status[0] !== 0}/>
             <button onClick={() => {
                 if (status[0] === 0) {
+                    /** @type {[string, Promise<void>]} */
                     const [id, promise] = ServerPreloads.listen(wi, port);
+                    /** @type {[1, string, string]} */
                     const ks = [1, status[1], id];
                     setStatus(ks);
                     promise.then(() => setStatus(nstatus => {
@@ -115,7 +119,7 @@ const Main = () => {
         };
     });
     useEffect(() => {
-        /** @param {null | 'C' | 'H' | number} progress */
+        /** @param {null | 'C' | 'H' | number} np */
         const onprogress = np => {
             if (np === 'C' || np === 'H') {
                 setProgress(np);
@@ -165,8 +169,8 @@ const Main = () => {
         </svg>
         <div className={styles.cooltag}>COOL</div>
         <div className={styles.hottag}>HOT</div>
-        <Player wi="C" onConnect={() => setConnecting([true, connecting[1]])} onDisConnect={() => setConnecting([false, connecting[1]])}/>
-        <Player wi="H" onConnect={() => setConnecting([connecting[0], true])} onDisConnect={() => setConnecting([connecting[0], false])}/>
+        <Player wi="C" onConnect={() => setConnecting([true, connecting[1]])} onDisConnect={() => setConnecting([false, connecting[1]])} started={progress != null}/>
+        <Player wi="H" onConnect={() => setConnecting([connecting[0], true])} onDisConnect={() => setConnecting([connecting[0], false])} started={progress != null}/>
         <div className={styles.control}>
             <button className={progress !== null ? styles.hidden : void 0}  onClick={() => {
                 ServerPreloads.start();
