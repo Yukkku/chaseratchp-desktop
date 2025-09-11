@@ -27,6 +27,8 @@ const createGame = () => {
   let items = [0, 0];
   /** @type {'C' | 'H'} */
   let lastMove = 'H';
+  /** @type {null | 'C' | 'H'} */
+  let forceWinnwer = null;
   /**
    * @param {number} i
    * @param {number} j
@@ -36,6 +38,7 @@ const createGame = () => {
   };
   /** @returns {'C'|'H'|null} */
   const winner =  () => {
+    if (forceWinnwer) return forceWinnwer;
     let coolL = getMapCell(...cool) === 2;
     let hotL = getMapCell(...hot) === 2;
     /** @type {[number, number][]} */
@@ -89,6 +92,8 @@ const createGame = () => {
       emitUpdate();
     },
     winner,
+    /** @param {'C' | 'H'} player */
+    setWinner: (player) => { forceWinnwer = player; },
     /**
      * @param {'C' | 'H'} player
      * @returns {[number, number]}
@@ -427,6 +432,7 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
     this.ipc.handle('chaser:start', async () => {
       const cool = this.#cool?.[0];
       const hot = this.#hot?.[0];
+      let flg = false;
       if (!cool || !hot) return;
       for (let i = 0; i < 100; ++i) {
         this.window.webContents.send('chaser:progress', this.#game.winner() ?? 200 - i * 2);
@@ -434,23 +440,53 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
           cool.turnStart(this.#game, 'C');
           const fin = () => {
             cool.offTurnend(fin);
-            cool.offClose(fin);
+            cool.offClose(onCoolClose);
+            hot.offClose(onHotClose);
             resolve();
           };
+          const onCoolClose = () => {
+            fin();
+            flg = true;
+            hot.finGame(this.#game, 'H');
+            this.window.webContents.send('chaser:progress', 'H');
+          };
+          const onHotClose = () => {
+            fin();
+            flg = true;
+            this.#game.setWinner('C');
+            this.window.webContents.send('chaser:progress', 'C');
+          };
           cool.onTurnend(fin);
-          cool.onClose(fin);
+          cool.onClose(onCoolClose);
+          hot.onClose(onHotClose);
         }));
+        if (flg) return;
         this.window.webContents.send('chaser:progress', this.#game.winner() ?? 199 - i * 2);
         await /** @type {Promise<void>} */ (new Promise(resolve => {
           hot.turnStart(this.#game, 'H');
           const fin = () => {
             hot.offTurnend(fin);
-            hot.offClose(fin);
+            hot.offClose(onHotClose);
+            cool.offClose(onCoolClose);
             resolve();
           };
+          const onHotClose = () => {
+            fin();
+            flg = true;
+            cool.finGame(this.#game, 'C');
+            this.window.webContents.send('chaser:progress', 'C');
+          };
+          const onCoolClose = () => {
+            fin();
+            flg = true;
+            this.#game.setWinner('H');
+            this.window.webContents.send('chaser:progress', 'H');
+          };
           hot.onTurnend(fin);
-          hot.onClose(fin);
+          hot.onClose(onHotClose);
+          cool.onClose(onCoolClose);
         }));
+        if (flg) return;
       }
       this.window.webContents.send('chaser:progress', this.#game.winner() ?? 0);
       cool.finGame(this.#game, 'C');
