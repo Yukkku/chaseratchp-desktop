@@ -183,6 +183,8 @@ const Main = () => {
                 ("Coolの勝ち!")
              : progress === 'H' ?
                 ("Hotの勝ち!")
+             : progress === 0 ?
+                ("引き分け!")
              :
                 (`残り${Math.ceil(progress / 2)}ターン`)
             }
