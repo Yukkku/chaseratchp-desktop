@@ -484,6 +484,15 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
   #cool;
   /** @type {[ReturnType<typeof createClient>, string] | null} */
   #hot;
+  #closed = false;
+
+  /**
+   * @param {string} channel
+   * @param  {...unknown} args
+   */
+  #safeSend(channel, ...args) {
+    if (!this.#closed) this.window.webContents.send(channel, ...args);
+  }
 
   /** @param {Electron.BrowserWindow} [parent] */
   constructor (parent) {
@@ -512,10 +521,10 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
         });
       }
       client.onOpen(name => {
-        this.window.webContents.send('chaser:connected', id, name);
+        this.#safeSend('chaser:connected', id, name);
       });
       client.onClose(() => {
-        this.window.webContents.send('chaser:closed', id);
+        this.#safeSend('chaser:closed', id);
       });
       return;
     });
@@ -529,6 +538,7 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
       }
     });
     this.window.on('close', () => {
+      this.#closed = true;
       if (this.#cool) this.#cool[0].close();
       this.#cool = null;
       if (this.#hot) this.#hot[0].close();
@@ -540,7 +550,7 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
       let flg = false;
       if (!cool || !hot) return;
       for (let i = 0; i < this.#game.turns; ++i) {
-        this.window.webContents.send('chaser:progress', this.#game.winner() ?? (this.#game.turns - i) * 2);
+        this.#safeSend('chaser:progress', this.#game.winner() ?? (this.#game.turns - i) * 2);
         await /** @type {Promise<void>} */ (new Promise(resolve => {
           cool.turnStart(this.#game, 'C');
           const fin = () => {
@@ -553,20 +563,20 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
             fin();
             flg = true;
             hot.finGame(this.#game, 'H');
-            this.window.webContents.send('chaser:progress', this.#game.winner() ?? 'H');
+            this.#safeSend('chaser:progress', this.#game.winner() ?? 'H');
           };
           const onHotClose = () => {
             fin();
             flg = true;
             this.#game.setWinner('C');
-            this.window.webContents.send('chaser:progress', 'C');
+            this.#safeSend('chaser:progress', 'C');
           };
           cool.onTurnend(fin);
           cool.onClose(onCoolClose);
           hot.onClose(onHotClose);
         }));
         if (flg) return;
-        this.window.webContents.send('chaser:progress', this.#game.winner() ?? (this.#game.turns - i) * 2 - 1);
+        this.#safeSend('chaser:progress', this.#game.winner() ?? (this.#game.turns - i) * 2 - 1);
         await /** @type {Promise<void>} */ (new Promise(resolve => {
           hot.turnStart(this.#game, 'H');
           const fin = () => {
@@ -579,13 +589,13 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
             fin();
             flg = true;
             cool.finGame(this.#game, 'C');
-            this.window.webContents.send('chaser:progress', this.#game.winner() ?? 'C');
+            this.#safeSend('chaser:progress', this.#game.winner() ?? 'C');
           };
           const onCoolClose = () => {
             fin();
             flg = true;
             this.#game.setWinner('H');
-            this.window.webContents.send('chaser:progress', 'H');
+            this.#safeSend('chaser:progress', 'H');
           };
           hot.onTurnend(fin);
           hot.onClose(onHotClose);
@@ -593,12 +603,12 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
         }));
         if (flg) return;
       }
-      this.window.webContents.send('chaser:progress', this.#game.lastWinner() ?? 0);
+      this.#safeSend('chaser:progress', this.#game.lastWinner() ?? 0);
       cool.finGame(this.#game, 'C');
       hot.finGame(this.#game, 'H');
     });
     this.#game.onUpdate(field => {
-      this.window.webContents.send('chaser:update', field);
+      this.#safeSend('chaser:update', field);
     });
 
     this.ipc.on('chaser:readfile', async () => {
