@@ -59,7 +59,7 @@ const handleClickAbout = () => {
 };
 
 const handleClickSourceCode = () => {
-  window.open('https://github.com/TurboWarp');
+  window.open('https://github.com/Yukkku/chaseratchp-desktop');
 };
 
 const securityManager = {
