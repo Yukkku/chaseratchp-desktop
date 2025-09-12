@@ -19,20 +19,27 @@ const net = require('node:net');
 const createGame = () => {
   /** @type {(0|2|3)[][]} */
   let map = [
-    [0, 0, 0],
-    [2, 3, 2],
-    [0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 2, 0, 2, 0, 0],
+    [0, 0, 0, 0, 0, 2, 0, 2, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [2, 3, 3, 0, 0, 3, 3, 2, 3],
+    [3, 2, 3, 3, 0, 0, 3, 3, 2],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 2, 0, 2, 0, 0, 0, 0, 0],
+    [0, 0, 2, 0, 2, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
   ];
   /** @type {[number, number]} */
-  let cool = [0, 0];
+  let cool = [1, 1];
   /** @type {[number, number]} */
-  let hot = [2, 2];
+  let hot = [8, 7];
   /** @type {[number, number]} */
   let items = [0, 0];
   /** @type {'C' | 'H'} */
   let lastMove = 'H';
   /** @type {number} */
-  let turns = 100;
+  let turns = 50;
   /** @type {null | 'C' | 'H'} */
   let forceWinnwer = null;
   /**

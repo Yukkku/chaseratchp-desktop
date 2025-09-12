@@ -141,10 +141,22 @@ const Player = ({ wi, onConnect, onDisConnect, started, score }) => {
 
 const Main = () => {
     const [field, setField] = useState(/** @type {Field} */ ({
-        map: [[0, 0, 0], [2, 3, 2], [0, 0, 0]],
-        cool: [0, 0],
-        hot: [2, 2],
+        map: [
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 0, 0, 0, 2, 0, 2, 0, 0],
+            [0, 0, 0, 0, 0, 2, 0, 2, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [2, 3, 3, 0, 0, 3, 3, 2, 3],
+            [3, 2, 3, 3, 0, 0, 3, 3, 2],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 2, 0, 2, 0, 0, 0, 0, 0],
+            [0, 0, 2, 0, 2, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        ],
+        cool: [1, 1],
+        hot: [8, 7],
         score: { cool: 0, hot: 0 },
+        turns: 50,
     }));
     const [connecting, setConnecting] = useState(/** @type {[boolean, boolean]} */ ([false, false]));
     const [progress, setProgress] = useState(/** @type {null | number | 'C' | 'H'} */ (null));
