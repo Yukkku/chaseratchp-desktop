@@ -13,6 +13,7 @@ const net = require('node:net');
  *   hot: [number, number],
  *   score: { cool: number, hot: number },
  *   turns: number,
+ *   rect: ['C' | 'H', number, number, number, number] | null,
  * }} Field
  */
 
@@ -40,8 +41,25 @@ const createGame = () => {
   let lastMove = 'H';
   /** @type {number} */
   let turns = 50;
+  /** @type {['C' | 'H', number, number, number, number] | null} */
+  let rect = null;
   /** @type {null | 'C' | 'H'} */
   let forceWinnwer = null;
+  /**
+   * @param {'C' | 'H'} player
+   * @param {[number, number]} p1
+   * @param {[number, number]} p2
+   * @returns {['C' | 'H', number, number, number, number]}
+   */
+  const genRect = (player, p1, p2) => {
+    const height = map.length;
+    const width = map[0].length;
+    const xmin = Math.max(Math.min(p1[0], p2[0]), 0);
+    const xmax = Math.min(Math.max(p1[0], p2[0]), height - 1);
+    const ymin = Math.max(Math.min(p1[1], p2[1]), 0);
+    const ymax = Math.min(Math.max(p1[1], p2[1]), width - 1);
+    return [player, xmin, ymin, xmax - xmin + 1, ymax - ymin + 1];
+  };
   /**
    * @param {number} i
    * @param {number} j
@@ -90,19 +108,20 @@ const createGame = () => {
   /** @type {Set<(field: Field) => void>} */
   const updateListeners = new Set();
   const emitUpdate = () => {
-    const field = { map, cool, hot, score: { cool: items[0], hot: items[1] }, turns };
+    const field = { map, cool, hot, score: { cool: items[0], hot: items[1] }, turns, rect };
     for (const listener of updateListeners) listener(field);
   };
 
   return {
     /** @returns {Field} */
-    field: () => ({ map, cool, hot, score: { cool: items[0], hot: items[1] }, turns }),
+    field: () => ({ map, cool, hot, score: { cool: items[0], hot: items[1] }, turns, rect }),
     /** @param {Field} field */
     setField: field => {
       map = field.map;
       cool = field.cool;
       hot = field.hot;
       turns = field.turns;
+      rect = field.rect;
       emitUpdate();
     },
     winner,
@@ -141,6 +160,7 @@ const createGame = () => {
         dir = [0, 1];
       } else throw new Error();
       lastMove = player;
+      rect = null;
       if (command[0] === 'w') {
         p[0] += dir[0];
         p[1] += dir[1];
@@ -159,6 +179,7 @@ const createGame = () => {
         emitUpdate();
         return getAround(p, player);
       } else if (command[0] === 'l') {
+        rect = genRect(player, [p[0] + dir[0] * 2 - 1, p[1] + dir[1] * 2 - 1], [p[0] + dir[0] * 2 + 1, p[1] + dir[1] * 2 + 1]);
         emitUpdate();
         return getAround([p[0] + dir[0] * 2, p[1] + dir[1] * 2], player);
       } else if (command[0] === 's') {
@@ -175,6 +196,7 @@ const createGame = () => {
             r += String(getMapCell(...q));
           }
         }
+        rect = genRect(player, [p[0] + dir[0], p[1] + dir[1]], [p[0] + dir[0] * 9, p[1] + dir[1] * 9]);
         emitUpdate();
         return r;
       } else throw new Error();
@@ -448,6 +470,7 @@ const parseField = str => {
     hot: [hot[1], hot[0]],
     score: { cool: 0, hot: 0 },
     turns,
+    rect: null,
   };
 };
 

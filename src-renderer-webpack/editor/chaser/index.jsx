@@ -45,6 +45,7 @@ import styles from './server.css';
  *      hot: [number, number];
  *      score: { cool: number, hot: number };
  *      turns: number;
+ *      rect: ['C' | 'H', number, number, number, number] | null;
  *  }} Field
  */
 
@@ -157,6 +158,7 @@ const Main = () => {
         hot: [8, 7],
         score: { cool: 0, hot: 0 },
         turns: 50,
+        rect: null,
     }));
     const [connecting, setConnecting] = useState(/** @type {[boolean, boolean]} */ ([false, false]));
     const [progress, setProgress] = useState(/** @type {null | number | 'C' | 'H'} */ (null));
@@ -212,6 +214,7 @@ const Main = () => {
                     <path fill="#f30" d="M-0.5,-0.5V20.5H4V12H16V20.5H20.5V-0.5H16V8H4V-0.5Z"/>
                 </g>)
             }
+            {field.rect && (<rect fill={field.rect[0] === 'C' ? "#03f4" : "#f304"} x={field.rect[2] * 21 + 0.5} y={field.rect[1] * 21 + 0.5} width={field.rect[4] * 21} height={field.rect[3] * 21}/>)}
             {Array.from({length: height + 1}, (_, i) => (
                 <rect x={0} y={i * 21} width="100%" height={1} fill="var(--view-border)"/>
             ))}
