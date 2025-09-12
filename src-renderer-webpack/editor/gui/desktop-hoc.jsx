@@ -217,7 +217,7 @@ const DesktopHOC = function (WrappedComponent) {
               onClick: handleClickPrivacy
             },
             {
-              title: this.messages['in-app-about.about'],
+              title: this.messages['in-app-about.about'].replaceAll('TurboWarp', 'ChaseratchP'),
               onClick: handleClickAbout
             },
             {
