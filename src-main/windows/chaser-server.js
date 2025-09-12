@@ -160,7 +160,7 @@ const createGame = () => {
         return getAround(p, player);
       } else if (command[0] === 'l') {
         emitUpdate();
-        return getAround([p[0] + dir[0] * 2, p[0] + dir[0] * 2], player);
+        return getAround([p[0] + dir[0] * 2, p[1] + dir[1] * 2], player);
       } else if (command[0] === 's') {
         /** @type {[number, number]} */
         const q = [...p];
