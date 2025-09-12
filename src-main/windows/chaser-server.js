@@ -179,7 +179,9 @@ const createGame = () => {
         emitUpdate();
         return getAround(p, player);
       } else if (command[0] === 'l') {
-        rect = genRect(player, [p[0] + dir[0] * 2 - 1, p[1] + dir[1] * 2 - 1], [p[0] + dir[0] * 2 + 1, p[1] + dir[1] * 2 + 1]);
+        if (command[2] !== 'n') {
+          rect = genRect(player, [p[0] + dir[0] * 2 - 1, p[1] + dir[1] * 2 - 1], [p[0] + dir[0] * 2 + 1, p[1] + dir[1] * 2 + 1]);
+        }
         emitUpdate();
         return getAround([p[0] + dir[0] * 2, p[1] + dir[1] * 2], player);
       } else if (command[0] === 's') {
@@ -196,7 +198,9 @@ const createGame = () => {
             r += String(getMapCell(...q));
           }
         }
-        rect = genRect(player, [p[0] + dir[0], p[1] + dir[1]], [p[0] + dir[0] * 9, p[1] + dir[1] * 9]);
+        if (command[2] !== 'n') {
+          rect = genRect(player, [p[0] + dir[0], p[1] + dir[1]], [p[0] + dir[0] * 9, p[1] + dir[1] * 9]);
+        }
         emitUpdate();
         return r;
       } else throw new Error();
@@ -268,7 +272,7 @@ const createClient = port => {
         socket.write(around + '\r\n');
         info[1] = around[0] === '0' ? 5 : 3;
       } else if (info[1] === 3) {
-        if (!/^[wpls][udlr]$/.test(msg)) {
+        if (!/^[wpls][udlr]n?$/.test(msg)) {
           socket.end();
           info[1] = 9;
           status = [9];
