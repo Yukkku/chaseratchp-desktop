@@ -189,11 +189,11 @@ const Main = () => {
     const width = field.map[0].length;
     const height = field.map.length;
     return <div className={styles.grid}>
-        <svg className={styles.view} viewBox={`0 0 ${width * 21 + 1} ${height * 21 + 1}`}>
-            <rect x={0.5} y={0.5} width={width * 21} height={height * 21} fill="var(--view-back)"/>
+        <svg className={styles.view} viewBox={`0 0 ${width * 21 + 3} ${height * 21 + 3}`}>
+            <rect x={1} y={1} width={width * 21 + 1} height={height * 21 + 1} fill="var(--view-back)"/>
             {field.map.map((line, i) => line.map((c, j) => {
-                const offsetX = j * 21 + 1;
-                const offsetY = i * 21 + 1;
+                const offsetX = j * 21 + 2;
+                const offsetY = i * 21 + 2;
                 if (c === 0) return;
                 if (c === 2) return (<g transform={`translate(${offsetX} ${offsetY})`} stroke="var(--view-wallline)">
                     <rect x={-0.5} y={-0.5} width={21} height={21} fill="var(--view-wall)" stroke="none"/>
@@ -205,22 +205,23 @@ const Main = () => {
                 </g>);
             }))}
             {0 <= field.cool[0] && field.cool[0] < height && 0 <= field.cool[1] && field.cool[1] < width
-                && (<g transform={`translate(${field.cool[1] * 21 + 1} ${field.cool[0] * 21 + 1})`}>
+                && (<g transform={`translate(${field.cool[1] * 21 + 2} ${field.cool[0] * 21 + 2})`}>
                     <path fill="#03f" d="M20.5,-0.5L10,0A10,10 0 0,0 10,20L20.5,20.5V16H10A6,6 0 0,1 10,4H20.5Z"/>
                 </g>)
             }
             {0 <= field.hot[0] && field.hot[0] < height && 0 <= field.hot[1] && field.hot[1] < width
-                && (<g transform={`translate(${field.hot[1] * 21 + 1} ${field.hot[0] * 21 + 1})`}>
+                && (<g transform={`translate(${field.hot[1] * 21 + 2} ${field.hot[0] * 21 + 2})`}>
                     <path fill="#f30" d="M-0.5,-0.5V20.5H4V12H16V20.5H20.5V-0.5H16V8H4V-0.5Z"/>
                 </g>)
             }
-            {field.rect && (<rect fill={field.rect[0] === 'C' ? "#03f4" : "#f304"} x={field.rect[2] * 21 + 0.5} y={field.rect[1] * 21 + 0.5} width={field.rect[4] * 21} height={field.rect[3] * 21}/>)}
-            {Array.from({length: height + 1}, (_, i) => (
-                <rect x={0} y={i * 21} width="100%" height={1} fill="var(--view-border)"/>
+            {field.rect && (<rect fill={field.rect[0] === 'C' ? "#03f4" : "#f304"} x={field.rect[2] * 21 + 1.5} y={field.rect[1] * 21 + 1.5} width={field.rect[4] * 21} height={field.rect[3] * 21}/>)}
+            {Array.from({length: height - 1}, (_, i) => (
+                <rect x={1} y={i * 21 + 22} width={width * 21 + 1} height={1} fill="var(--view-border)"/>
             ))}
-            {Array.from({length: width + 1}, (_, i) => (
-                <rect x={i * 21} y={0} width={1} height="100%" fill="var(--view-border)"/>
+            {Array.from({length: width - 1}, (_, i) => (
+                <rect x={i * 21 + 22} y={1} width={1} height={height * 21 + 1} fill="var(--view-border)"/>
             ))}
+            <rect x={1} y={1} width={width * 21 + 1} height={height * 21 + 1} fill="none" stroke="var(--view-border)" stroke-width="2"></rect>
         </svg>
         <div className={styles.cooltag}>
             <svg viewBox="0 0 8 8">
