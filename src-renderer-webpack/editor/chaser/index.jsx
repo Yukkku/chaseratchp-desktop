@@ -130,11 +130,11 @@ const Player = ({ wi, onConnect, onDisConnect, started, score }) => {
                     /** @type {[1, string, string]} */
                     const ks = [1, status[1], id];
                     setStatus(ks);
-                } else if (status[0] === 2) {
+                } else if (status[0] === 1) {
                     setStatus([0, status[1]]);
                     ServerPreloads.unlisten(wi, status[2]);
                 }
-            }} disabled={status[0] === 1 || port == null}>{status[0] === 0 ? "待機開始" : "待機終了"}</button>
+            }} disabled={port == null}>{status[0] === 0 ? "待機開始" : "待機終了"}</button>
         </div>
     </div>;
 };
