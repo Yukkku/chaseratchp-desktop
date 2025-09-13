@@ -23,6 +23,12 @@ contextBridge.exposeInMainWorld('EditorPreload', {
     exportForPackager = callback;
   },
   setIsFullScreen: (isFullScreen) => ipcRenderer.invoke('set-is-full-screen', isFullScreen),
+  onRemotekey: listener => { remoteKeyListeners.add(listener); },
+});
+
+let remoteKeyListeners = new Set();
+ipcRenderer.on('chaser:remotekey', (_, data) => {
+  for (const listener of remoteKeyListeners) listener(data);
 });
 
 let exportForPackager = () => Promise.reject(new Error('exportForPackager missing'));

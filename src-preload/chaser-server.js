@@ -35,6 +35,8 @@ contextBridge.exposeInMainWorld('ServerPreloads', {
   onUpdate: listener => { updateListeners.add(listener); },
   /** @param {(progress: any) => void} listener */
   onProgress: listener => { progressListeners.add(listener); },
+
+  remotekey: data => ipcRenderer.send('chaser:remotekey', data),
 });
 
 /** @type {Set<(id: string) => void>} */

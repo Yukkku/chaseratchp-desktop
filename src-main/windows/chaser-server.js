@@ -621,6 +621,9 @@ module.exports = class ChaserServerWindow extends AbstractWindow {
         if (field) this.#game.setField(field);
       });
     });
+    this.ipc.on('chaser:remotekey', (_, data) => {
+      this.parentWindow?.webContents.send('chaser:remotekey', data);
+    });
   }
 
   getDimensions () {

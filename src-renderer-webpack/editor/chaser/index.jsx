@@ -261,3 +261,20 @@ const Main = () => {
 };
 
 ReactDOM.render((<Main />), document.getElementById('app'));
+
+window.addEventListener('keydown', e => {
+    const key = (!e.key || e.key === 'Dead') ? e.keyCode : e.key;
+    ServerPreloads.remotekey({
+        key: key,
+        keyCode: e.keyCode,
+        isDown: true,
+    });
+});
+window.addEventListener('keyup', e => {
+    const key = (!e.key || e.key === 'Dead') ? e.keyCode : e.key;
+    ServerPreloads.remotekey({
+        key: key,
+        keyCode: e.keyCode,
+        isDown: false,
+    });
+});
