@@ -122,9 +122,11 @@ const Player = ({ wi, onConnect, onDisConnect, started, score }) => {
             && (<div className={styles.name}>{status[1]}</div>)}
         <div className={styles.port}>
             <input onChange={(e) => {
+                if (started) return;
                 setStatus([0, e.target.value]);
             }} value={status[0] === 0 || status[0] === 1 ? status[1] : "0"} disabled={status[0] !== 0}/>
             <button onClick={() => {
+                if (started) return;
                 if (status[0] === 0) {
                     /** @type {string} */
                     const id = ServerPreloads.listen(wi, port);
@@ -240,10 +242,16 @@ const Main = () => {
         <Player wi="C" onConnect={() => setConnecting([true, connecting[1]])} onDisConnect={() => setConnecting([false, connecting[1]])} started={progress != null}/>
         <Player wi="H" onConnect={() => setConnecting([connecting[0], true])} onDisConnect={() => setConnecting([connecting[0], false])} started={progress != null}/>
         <div className={styles.control}>
-            <button className={progress != null ? styles.hidden : void 0} onClick={() => ServerPreloads.readfile()}>マップを読み込む</button>
+            <button className={progress != null ? styles.hidden : void 0} onClick={() => {
+                if (progress == null) {
+                    ServerPreloads.readfile()
+                }
+            }}>マップを読み込む</button>
             <button className={`${styles.start} ${progress != null ? styles.hidden : ""}`}  onClick={() => {
-                ServerPreloads.start();
-                setProgress(field.turns * 2);
+                if (progress == null) {
+                    ServerPreloads.start();
+                    setProgress(field.turns * 2);
+                }
             }} disabled={!connecting.every(r => r)}>ゲーム開始</button>
             {progress === null ?
                 (undefined)
