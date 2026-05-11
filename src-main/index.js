@@ -28,20 +28,15 @@ app.commandLine.appendSwitch('host-resolver-rules', 'MAP device-manager.scratch.
 if (!settings.hardwareAcceleration) {
   app.disableHardwareAcceleration();
 
-  // SwiftShader is Chromium's software WebGL fallback. Starting in Chrome 137,
-  // it will be disabled by default. Enabling SwiftShader is required for the
-  // editor to work without hardware acceleration, so adding this flag will be
-  // required. Chromium considers this dangerous, so only add the flag when it
-  // is needed.
+  // SwiftShader is Chromium's software WebGL fallback. Starting in Chrome 139,
+  // it is disabled by default. Enabling SwiftShader is required for the editor
+  // to work without hardware acceleration, so adding this flag will be
+  // required. Google considers this dangerous, so only add the flag when it is
+  // needed.
   // https://github.com/TurboWarp/desktop/issues/1158
   // https://chromestatus.com/feature/5166674414927872
   // https://chromium.googlesource.com/chromium/src/+/main/docs/gpu/swiftshader.md
   app.commandLine.appendSwitch('enable-unsafe-swiftshader');
-}
-
-// Workaround for https://github.com/electron/electron/issues/46538
-if (process.platform === 'linux') {
-  app.commandLine.appendSwitch('gtk-version', '3');
 }
 
 app.on('session-created', (session) => {
@@ -91,6 +86,21 @@ app.on('session-created', (session) => {
     }
 
     window.onBeforeRequest(details, callback);
+  });
+
+  session.webRequest.onBeforeSendHeaders((details, callback) => {
+    const url = details.url.toLowerCase();
+    if (url.startsWith('devtools:')) {
+      return callback({});
+    }
+
+    const webContents = details.webContents;
+    const window = AbstractWindow.getWindowByWebContents(webContents);
+    if (!webContents || !window) {
+      return callback({});
+    }
+
+    window.onBeforeSendHeaders(details, callback);
   });
 
   session.webRequest.onHeadersReceived((details, callback) => {

@@ -1,6 +1,37 @@
-This document is the authoritative source for TurboWarp's changelogs. Everything else gets generated from this list by `node scripts/generate-changelogs.js`.
+This document is the authoritative source for TurboWarp's changelogs. Everything else gets generated from this list by `node scripts/generate-changelogs.mjs`.
 
 Prefix notes with "Windows:", "macOS:", or "Linux:" as needed. Do not use **formatting** or [links](https://desktop.turbowarp.org/).
+
+# 1.15.5 (2026-03-30)
+
+ - Added "online?" block, like the new Scratch block with the same name
+ - Fixed text to speech extension
+ - Fixed packager being unable to package projects with non-Scratch extensions without an internet connection
+ - Fixed text to speech extension and others in packager or when "Allow extensions to access any website" is enabled
+
+# 1.15.2 (2026-01-17)
+
+ - Fixed various bugs in new compiler
+ - Improved frame pacing on Windows
+ - Optimized variable and list monitors
+ - Optimized middle click popup on large projects
+ - Fixed local storage extension
+ - Fixed camera extension not updating hidden sprites
+ - Fixed iframe extension showing error 153 in YouTube embeds
+ - Linux: Fixed title bar icons on Ubuntu
+
+# 1.15.0 (2025-10-19)
+
+ - New compiler runs some projects twice as fast
+ - Added face sensing extension. It uses a machine learning model that runs on your computer, so it works offline. Your webcam feed is never uploaded to any server
+ - Local storage extension no longer requires manually configuring namespace
+ - Newgrounds extension significantly improved
+ - Fixed "Unexpected status 503" errors when packaging certain projects
+ - Windows: Fixed broken text boxes after choosing "Stay" in the unsaved changes confirmation dialog
+ - macOS: Fixed poor performance on macOS 26
+ - macOS: macOS 11 users now have to use a special legacy version of the app which is slower and less secure than the regular version
+ - Linux: If you use a Wayland compositor, the app will now use native Wayland instead of the Xwayland compatibility layer
+ - Linux: Changed executable name back to "turbowarp-desktop" after unintentional change in previous update
 
 # 1.14.5 (2025-08-28)
 

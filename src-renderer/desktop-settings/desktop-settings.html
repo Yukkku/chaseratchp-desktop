@@ -2,6 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
       body {
         margin: 0;
@@ -55,10 +56,8 @@
   <body>
     <main>
       <script>
-        const {locale, strings} = DesktopSettingsPreload.getStrings();
+        const {locale, strings, settings} = DesktopSettingsPreload.init();
         document.documentElement.lang = locale;
-
-        const settings = DesktopSettingsPreload.getSettings();
       </script>
 
       <h1 class="title"></h1>
@@ -227,7 +226,14 @@
         hardwareAcceleration.checked = settings.hardwareAcceleration;
         hardwareAccelerationWarning.hidden = hardwareAcceleration.checked;
 
-        document.querySelector('.hardware-acceleration-label').textContent = strings['desktop-settings.hardware-acceleration-when-available'];
+        const chromiumMajorVersion = +(navigator.userAgent.match(/Chrome\/(\d+)/)[1]);
+        document.querySelector('.hardware-acceleration-label').textContent = (
+          // Chromium 139 no longer does software fallback for WebGL by default
+          // https://chromestatus.com/feature/5166674414927872
+          chromiumMajorVersion >= 139 ?
+          strings['desktop-settings.hardware-acceleration'] :
+          strings['desktop-settings.hardware-acceleration-when-available']
+        );
         hardwareAccelerationWarning.textContent = strings['desktop-settings.hardware-acceleration-disabled'];
       </script>
 

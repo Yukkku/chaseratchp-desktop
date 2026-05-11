@@ -1,10 +1,9 @@
-require('./patch-electron-builder');
-
-const fs = require('fs');
-const pathUtil = require('path');
-const childProcess = require('child_process');
-const builder = require('electron-builder');
-const electronFuses = require('@electron/fuses');
+import * as fs from 'node:fs';
+import * as pathUtil from 'node:path';
+import * as childProcess from 'node:child_process';
+import * as builder from 'electron-builder';
+import * as electronFuses from '@electron/fuses';
+import './patch-electron-builder.cjs';
 
 const {Platform, Arch} = builder;
 
@@ -18,6 +17,10 @@ const ELECTRON_26_FINAL = '26.6.10';
 
 // Electron 32 is the last version to support macOS 10.15
 const ELECTRON_32_FINAL = '32.3.3';
+
+// Electron 37 is the last version to support macOS 11
+// TODO: 37 is still being updates, we should keep bumping this
+const ELECTRON_37_FINAL = '37.8.0';
 
 /**
  * @returns {Date}
@@ -100,7 +103,8 @@ const flipFuses = async (context) => {
   /** @type {import('@electron/fuses').FuseV1Config} */
   const newFuses = {
     version: electronFuses.FuseVersion.V1,
-    strictlyRequireAllFuses: true,
+    // TODO: When electron-builder updates @electron/fuses to v2.x.x, we can should this in all cases again
+    strictlyRequireAllFuses: electronMajorVersion < 41,
   };
 
   // We don't use this option, but we have to set it explicitly due to strictlyRequireAllFuses.
@@ -124,6 +128,13 @@ const flipFuses = async (context) => {
   if (electronMajorVersion >= 29) {
     // We should try to disable this in the future but currently it breaks migrate.html.
     newFuses[electronFuses.FuseV1Options.GrantFileProtocolExtraPrivileges] = true;
+  }
+
+  if (electronMajorVersion >= 41) {
+    // This is the default, which will preserve to maximize performance for anything using WASM (eg. machine learning libraries)
+    // We already assume the web content process is fully compromised by malicious JS so letting WASM skip some bounds checks
+    // isn't a huge concern for us.
+    newFuses[electronFuses.FuseV1Options.WasmTrapHandlers] = true;
   }
 
   await context.packager.addElectronFuses(context, newFuses);
@@ -155,6 +166,17 @@ const afterPack = async (context) => {
   recursivelySetFileTimes(context.appOutDir, sourceDateEpoch);
 };
 
+const afterPackForUniversalMac = async (context) => {
+  // For universal binaries on macOS, we should only need to apply fuses at the end of the build,
+  // not on each child build that happens for Intel and ARM.
+  // https://github.com/electron-userland/electron-builder/issues/6365#issuecomment-1191747089
+  if (context.arch === Arch.universal) {
+    await flipFuses(context);
+  }
+
+  recursivelySetFileTimes(context.appOutDir, sourceDateEpoch);
+};
+
 const afterSign = async (context) => {
   // Ensure that modification times are still reproducible after signing and resource
   // editing.
@@ -166,8 +188,7 @@ const build = async ({
   platformType, // Passed as first argument into platform.createTarget(...)
   manageUpdates = false,
   legacy = false,
-  extraConfig = {},
-  prepare = (archName) => Promise.resolve({})
+  extraConfig = {}
 }) => {
   const buildForArch = async (archName) => {
     if (!Object.prototype.hasOwnProperty.call(Arch, archName)) {
@@ -197,10 +218,9 @@ const build = async ({
         tw_warn_legacy: isProduction,
         tw_update: isProduction && manageUpdates
       },
-      afterPack,
+      afterPack: arch === Arch.universal ? afterPackForUniversalMac : afterPack,
       afterSign,
-      ...extraConfig,
-      ...await prepare(archName)
+      ...extraConfig
     };
 
     return builder.build({
@@ -257,16 +277,7 @@ const buildMicrosoftStore = () => build({
 const buildMac = () => build({
   platformName: 'MAC',
   platformType: 'dmg',
-  manageUpdates: true,
-  extraConfig: {
-    afterPack: async (context) => {
-      // For non-legacy macOS we should only need to apply fuses on the universal build at the end
-      // https://github.com/electron-userland/electron-builder/issues/6365#issuecomment-1191747089
-      if (context.arch === Arch.universal) {
-        await afterPack(context);
-      }
-    }
-  }
+  manageUpdates: true
 });
 
 const buildMacLegacy10131014 = () => build({
@@ -292,6 +303,19 @@ const buildMacLegacy1015 = () => build({
       artifactName: '${productName}-Legacy-10.15-Setup-${version}.${ext}'
     },
     electronVersion: ELECTRON_32_FINAL
+  }
+});
+
+const buildMacLegacy11 = () => build({
+  platformName: 'MAC',
+  platformType: 'dmg',
+  manageUpdates: true,
+  legacy: true,
+  extraConfig: {
+    mac: {
+      artifactName: '${productName}-Legacy-11-Setup-${version}.${ext}'
+    },
+    electronVersion: ELECTRON_37_FINAL
   }
 });
 
@@ -358,6 +382,7 @@ const run = async () => {
     '--mac': buildMac,
     '--mac-legacy-10.13-10.14': buildMacLegacy10131014,
     '--mac-legacy-10.15': buildMacLegacy1015,
+    '--mac-legacy-11': buildMacLegacy11,
     '--mac-dir': buildMacDir,
     '--debian': buildDebian,
     '--tarball': buildTarball,
